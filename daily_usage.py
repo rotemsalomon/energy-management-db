@@ -28,6 +28,13 @@ def format_runtime(minutes):
     mins, secs = divmod(total_seconds, 60)
     return f"{mins:02}:{secs:02}"  # Format as mm:ss
 
+def calculate_co2e_emission(kwh):
+    # Emission factors (kg CO2-e per kWh)
+    EF2 = 0.68  # Scope 2 emission factor
+    EF3 = 0.09  # Scope 3 emission factor
+    """Calculate CO2e emissions in tonnes."""
+    return round((kwh * (EF2 + EF3)) / 1000, 2)
+
 def get_rate_for_response_time(cursor, response_time_str, asset_id):
     """
     Retrieve the applicable rate based on response_time for a given asset_id.
@@ -155,6 +162,7 @@ def calculate_daily_consumption_by_asset(db_file):
             asset_data[asset_id]['total_kwh'] += kwh
             # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
             daily_total_kwh += kwh
+            daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
             current_time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             current_hour = datetime.now().hour
@@ -162,7 +170,8 @@ def calculate_daily_consumption_by_asset(db_file):
             # If so, add to current_hour_kwh value.
             if response_time.date() == current_date and response_time.hour == current_hour:
                 current_hour_kwh += kwh
-
+                current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
+            
             # Compressor transition detection logic
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
@@ -224,48 +233,41 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
+            total_kwh_co2e = calculate_co2e_emission(total_kwh)
 
             # Check if an entry for this asset_id, date, and hour exists
-            cursor.execute('''
-                SELECT id FROM daily_usage WHERE asset_id = ? AND date = ? AND hour = ?
-            ''', (asset_id, current_date.isoformat(), hour))
 
-            record = cursor.fetchone()
-
-            if record:
-                #logging.info(f"Asset ID: {asset_id}")
-                #logging.info(f"Total kWh: {total_kwh}")
-                #logging.info(f"Average Comp Runtime: {ave_comp_runtime_str}")
-                #logging.info(f"Max Comp Runtime: {max_comp_runtime_str}")
-                #logging.info(f"Min Comp Runtime: {min_comp_runtime_str}")
-                #logging.info(f"Current Hour kWh: {current_hour_kwh}")
-                cursor.execute('''
-                    UPDATE daily_usage
-                    SET total_kwh = ?, cnt_comp_on = ?, cnt_comp_off = ?, ave_comp_runtime = ?, max_comp_runtime = ?, min_comp_runtime = ?, total_kwh_charge = ?, update_time = ?, percentage_change_kwh = ?, daily_total_kwh = ?, current_hour_kwh = ?
-                    WHERE asset_id = ? AND date = ? AND hour = ?
-                ''', (
-                    round(total_kwh, 2), cnt_comp_on, cnt_comp_off,
-                    ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str,
-                    round(total_kwh_charge, 2), current_time_str, percentage_change_kwh,
-                    round(daily_total_kwh, 2), round(current_hour_kwh, 2),
-                    asset_id, current_date.isoformat(), hour
-                ))
-            else:
-                #logging.info(f"Asset ID: {asset_id}")
-                #logging.info(f"Total kWh: {total_kwh}")
-                #logging.info(f"Average Comp Runtime: {ave_comp_runtime_str}")
-                #logging.info(f"Max Comp Runtime: {max_comp_runtime_str}")
-                #logging.info(f"Min Comp Runtime: {min_comp_runtime_str}")
-                #logging.info(f"Current Hour kWh: {current_hour_kwh}")
-                cursor.execute('''
-                    INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, percentage_change_kwh, daily_total_kwh, current_hour_kwh)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    asset_id, asset_name, current_date.isoformat(), round(total_kwh, 2), cnt_comp_on,
-                    cnt_comp_off, ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str,
-                    current_time_str, round(total_kwh_charge, 2), hour, percentage_change_kwh,
-                    round(daily_total_kwh, 2), round(current_hour_kwh, 2)
-                ))
+        # Insert or update the record in daily_usage
+        cursor.execute('''
+            INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, 
+                                    ave_comp_runtime, max_comp_runtime, min_comp_runtime, update_time, 
+                                    total_kwh_charge, hour, percentage_change_kwh, daily_total_kwh, 
+                                    current_hour_kwh, total_kwh_co2e, daily_total_kwh_co2e, current_hour_kwh_co2e)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(asset_id, date, hour) DO UPDATE SET
+                total_kwh = excluded.total_kwh,
+                cnt_comp_on = excluded.cnt_comp_on,
+                cnt_comp_off = excluded.cnt_comp_off,
+                ave_comp_runtime = excluded.ave_comp_runtime,
+                max_comp_runtime = excluded.max_comp_runtime,
+                min_comp_runtime = excluded.min_comp_runtime,
+                update_time = excluded.update_time,
+                total_kwh_charge = excluded.total_kwh_charge,
+                percentage_change_kwh = excluded.percentage_change_kwh,
+                daily_total_kwh = excluded.daily_total_kwh,
+                current_hour_kwh = excluded.current_hour_kwh,
+                total_kwh_co2e = excluded.total_kwh_co2e,
+                daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
+                current_hour_kwh_co2e = excluded.current_hour_kwh_co2e
+        ''', (
+            asset_id, asset_name, current_date.isoformat(), 
+            round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
+            ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
+            current_time_str, round(total_kwh_charge, 2), hour, 
+            percentage_change_kwh, round(daily_total_kwh, 2), 
+            round(current_hour_kwh, 2), total_kwh_co2e, 
+            daily_total_kwh_co2e, current_hour_kwh_co2e
+        ))
 
         conn.commit()
         logging.info("Daily consumption and compressor stats updated successfully.")
