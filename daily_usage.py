@@ -173,8 +173,10 @@ def calculate_daily_consumption_by_asset(db_file):
             # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
             daily_total_kwh += kwh
 
-            current_time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            current_hour = datetime.now().hour
+            # Get the formatted hour for the current record
+            hour = response_time.strftime('%H:%M')  # Format as HH:MM
+            current_hour = response_time.hour  # Get the current hour as an integer
+
             # Check if the response time is today and in the current hour.
             # If so, add to current_hour_kwh value.
             if response_time.date() == current_date and response_time.hour == current_hour:
@@ -225,7 +227,8 @@ def calculate_daily_consumption_by_asset(db_file):
             total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
-            hour = response_time.hour
+            # Get the formatted hour for the current record
+            hour = response_time.strftime('%H:%M')  # Format as HH:MM
 
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
