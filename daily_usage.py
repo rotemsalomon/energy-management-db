@@ -34,7 +34,10 @@ def format_runtime(minutes):
 
 def calculate_co2e_emission(kwh):
     """Calculate CO2e emissions in tonnes."""
-    return round((kwh * (EF2 + EF3)) / 1000, 2)
+    EF2 = 0.68  # Scope 2 emission factor in kg CO2-e/kWh
+    EF3 = 0.09  # Scope 3 emission factor in kg CO2-e/kWh
+    tCO2e = (kwh * (EF2 + EF3)) / 1000  # Convert to tonnes
+    return tCO2e
 
 def get_rate_for_response_time(cursor, response_time_str, asset_id):
     """
@@ -232,7 +235,9 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
-            
+
+        logging.info(f"Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+    
         total_kwh_co2e = calculate_co2e_emission(total_kwh)
         current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
         daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
