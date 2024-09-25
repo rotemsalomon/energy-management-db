@@ -230,6 +230,9 @@ def calculate_daily_consumption_by_asset(db_file):
             # Get the formatted hour for the current record
             hour = response_time.strftime('%H:%M')  # Format as HH:MM
 
+            # Define current_time_str based on response_time
+            current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
+
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
                 SELECT total_kwh FROM daily_usage WHERE asset_id = ? AND date = ? AND hour = ?
