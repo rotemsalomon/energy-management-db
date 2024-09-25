@@ -236,6 +236,10 @@ def calculate_daily_consumption_by_asset(db_file):
         current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
         daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
+        logging.info(f"total_kwh_co2e: {total_kwh_co2e}")
+        logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e}")
+        logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e}")
+
         # Insert or update the record in daily_usage
         cursor.execute('''
             INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, 
