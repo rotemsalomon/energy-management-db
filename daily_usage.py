@@ -38,7 +38,7 @@ def calculate_co2e_emission(kwh):
     EF3 = 0.09  # Scope 3 emission factor in kg CO2e/kWh
 
     # Calculate total CO2e in tonnes
-    tCO2e = (q_kwh * (EF2 + EF3)) / 1000  # Convert kg to tonnes
+    tCO2e = (kwh * (EF2 + EF3)) / 1000  # Convert kg to tonnes
 
     # Return CO2e value in grams if it's less than 0.5 tonnes
     if tCO2e < 0.5:
