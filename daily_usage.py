@@ -228,9 +228,14 @@ def calculate_daily_consumption_by_asset(db_file):
 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Get the formatted hour for the current record
-            hour = response_time.strftime('%H:%M')  # Format as HH:MM
+            # Set minutes and seconds to zero to get the beginning of the hour
+            response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
 
-            # Define current_time_str based on response_time
+            # Format the hour as HH:00 for the beginning of the hour
+            hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
+            current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
+
+            # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
 
             # Fetch yesterday's kWh for the same hour
