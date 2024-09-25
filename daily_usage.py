@@ -162,7 +162,6 @@ def calculate_daily_consumption_by_asset(db_file):
             asset_data[asset_id]['total_kwh'] += kwh
             # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
             daily_total_kwh += kwh
-            daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
             current_time_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             current_hour = datetime.now().hour
@@ -170,7 +169,6 @@ def calculate_daily_consumption_by_asset(db_file):
             # If so, add to current_hour_kwh value.
             if response_time.date() == current_date and response_time.hour == current_hour:
                 current_hour_kwh += kwh
-                current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
             
             # Compressor transition detection logic
             if previous_power[asset_id] < 100 and power >= 100:
@@ -233,9 +231,10 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
-            total_kwh_co2e = calculate_co2e_emission(total_kwh)
-
-            # Check if an entry for this asset_id, date, and hour exists
+            
+        total_kwh_co2e = calculate_co2e_emission(total_kwh)
+        current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
+        daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
         # Insert or update the record in daily_usage
         cursor.execute('''
