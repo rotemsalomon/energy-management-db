@@ -173,6 +173,9 @@ def calculate_daily_consumption_by_asset(db_file):
             # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
             daily_total_kwh += kwh
 
+            # Compute daily total kWh charge
+            daily_total_kwh_charge = daily_total_kwh * rate
+
             # Get the formatted hour for the current record
             hour = response_time.strftime('%H:%M')  # Format as HH:MM
             current_hour = response_time.hour  # Get the current hour as an integer
@@ -285,6 +288,7 @@ def calculate_daily_consumption_by_asset(db_file):
         total_kwh_co2e = excluded.total_kwh_co2e,
         daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
         current_hour_kwh_co2e = excluded.current_hour_kwh_co2e
+        daily_total_kwh_charge = excluded.daily_total_kwh_charge
 ''', (
     asset_id, asset_name, current_date.isoformat(), 
     round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
@@ -292,7 +296,8 @@ def calculate_daily_consumption_by_asset(db_file):
     current_time_str, round(total_kwh_charge, 2), hour, 
     percentage_change_kwh, round(daily_total_kwh, 2), 
     round(current_hour_kwh, 2), total_kwh_co2e, 
-    daily_total_kwh_co2e, current_hour_kwh_co2e
+    daily_total_kwh_co2e, current_hour_kwh_co2e,
+    round(daily_total_kwh_charge, 2)
 ))
 
         conn.commit()
