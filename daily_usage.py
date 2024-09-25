@@ -12,6 +12,10 @@ logging.basicConfig(
     filemode='a'
 )
 
+# Emission factors (kg CO2-e per kWh)
+EF2 = 0.68  # Scope 2 emission factor
+EF3 = 0.09  # Scope 3 emission factor
+
 # Database file path
 db_file = '/root/projects/tasmota/sqlite3_db/tasmota_data.db'
 
@@ -29,9 +33,6 @@ def format_runtime(minutes):
     return f"{mins:02}:{secs:02}"  # Format as mm:ss
 
 def calculate_co2e_emission(kwh):
-    # Emission factors (kg CO2-e per kWh)
-    EF2 = 0.68  # Scope 2 emission factor
-    EF3 = 0.09  # Scope 3 emission factor
     """Calculate CO2e emissions in tonnes."""
     return round((kwh * (EF2 + EF3)) / 1000, 2)
 
