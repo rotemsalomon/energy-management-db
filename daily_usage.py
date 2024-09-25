@@ -276,11 +276,11 @@ def calculate_daily_consumption_by_asset(db_file):
         current_hour_kwh_co2e = excluded.current_hour_kwh_co2e
 ''', (
     asset_id, asset_name, current_date.isoformat(), 
-    round(total_kwh, 3), cnt_comp_on, cnt_comp_off, 
+    round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
     ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-    current_time_str, round(total_kwh_charge, 3), hour, 
-    percentage_change_kwh, round(daily_total_kwh, 3), 
-    round(current_hour_kwh, 3), total_kwh_co2e, 
+    current_time_str, round(total_kwh_charge, 2), hour, 
+    percentage_change_kwh, round(daily_total_kwh, 2), 
+    round(current_hour_kwh, 2), total_kwh_co2e, 
     daily_total_kwh_co2e, current_hour_kwh_co2e
 ))
 
