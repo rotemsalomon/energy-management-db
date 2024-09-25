@@ -173,9 +173,6 @@ def calculate_daily_consumption_by_asset(db_file):
             # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
             daily_total_kwh += kwh
 
-            # Compute daily total kWh charge
-            daily_total_kwh_charge = daily_total_kwh * rate
-
             # Get the formatted hour for the current record
             hour = response_time.strftime('%H:%M')  # Format as HH:MM
             current_hour = response_time.hour  # Get the current hour as an integer
@@ -207,6 +204,9 @@ def calculate_daily_consumption_by_asset(db_file):
             rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
             kwh_charge = kwh * rate
             total_kwh_charges[asset_id] += kwh_charge
+
+            # Compute daily total kWh charge
+            daily_total_kwh_charge = daily_total_kwh * rate
 
         for asset_id, data in asset_data.items():
             total_kwh = data['total_kwh']
