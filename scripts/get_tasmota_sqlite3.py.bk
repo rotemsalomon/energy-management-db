@@ -1,0 +1,153 @@
+import requests
+import json
+import sqlite3
+import time
+import os
+import sys
+import logging
+from datetime import datetime
+
+# URLs
+url1 = 'http://192.168.2.159/cm?cmnd=Status+10'
+url2 = 'http://192.168.2.134/cm?cmnd=Status+10'
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[
+        logging.FileHandler("/var/log/tasmota_sqlite3.log"),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+
+def add_column_if_not_exists(cursor, table_name, column_name, column_type):
+    # Check if column exists, and if not, add it
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns = cursor.fetchall()
+    if not any(column[1] == column_name for column in columns):
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
+        # logging.info(f"Added column {column_name} to {table_name}")
+
+def create_db_and_table(db_file):
+    # Create a new SQLite database (or connect to it if it already exists)
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+
+    # Create the table if it doesn't exist
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tasmota_energy_data (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            url TEXT NOT NULL,
+            response_time TEXT NOT NULL,
+            energy_time TEXT NOT NULL,
+            total_start_time TEXT,
+            total REAL,
+            yesterday REAL,
+            today REAL,
+            period REAL,
+            power INTEGER,
+            apparent_power INTEGER,
+            reactive_power INTEGER,
+            factor REAL,
+            voltage REAL,
+            current REAL,
+            asset_id TEXT NOT NULL,
+            asset_name TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+
+    # Add the cur_comp_state column if it doesn't exist
+    add_column_if_not_exists(cursor, "tasmota_energy_data", "cur_comp_state", "TEXT")
+    conn.commit()
+    conn.close()
+
+def fetch_and_save_data(url, db_file):
+    try:
+        # Make the request without authentication
+        response = requests.get(url)
+        response.raise_for_status()  # Raises HTTPError for bad responses
+
+        # Parse the JSON response
+        data = response.json()
+
+        # Extract relevant fields
+        response_time = datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S')
+        status_sns = data.get('StatusSNS', {})
+        energy_time = status_sns.get('Time', '')
+        energy_data = status_sns.get('ENERGY', {})
+
+        # Define asset_id and asset_name
+        asset_id = 'DC234SN'
+        asset_name = 'Borelli 2-door IDC'
+
+        # Determine compressor state based on power value
+        power = energy_data.get('Power', 0)
+        cur_comp_state = 'OFF' if power < 100 else 'ON'
+
+        # Connect to the database, insert data, and close the connection
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO tasmota_energy_data (
+                url, response_time, energy_time, total_start_time, total,
+                yesterday, today, period, power, apparent_power, reactive_power, factor, voltage, current,
+                asset_id, asset_name, cur_comp_state
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            url,
+            response_time,
+            energy_time,
+            energy_data.get('TotalStartTime', ''),
+            energy_data.get('Total', 0.0),
+            energy_data.get('Yesterday', 0.0),
+            energy_data.get('Today', 0.0),
+            energy_data.get('Period', 0.0),
+            power,
+            energy_data.get('ApparentPower', 0),
+            energy_data.get('ReactivePower', 0),
+            energy_data.get('Factor', 0.0),
+            energy_data.get('Voltage', 0.0),
+            energy_data.get('Current', 0.0),
+            asset_id,
+            asset_name,
+            cur_comp_state
+        ))
+        conn.commit()
+        conn.close()
+
+        # Log successful data fetching and saving
+        # logging.info(f'Request successful. Data written to database for {url} with compressor state {cur_comp_state}.')
+
+    except requests.ConnectionError:
+        logging.error(f'Failed to connect to {url}. Please check your network connection.')
+    except requests.Timeout:
+        logging.error(f'Request to {url} timed out.')
+    except requests.RequestException as e:
+        logging.error(f'Failed to retrieve data: {e}')
+    except json.JSONDecodeError:
+        logging.error('Failed to decode JSON response.')
+
+if __name__ == '__main__':
+    # Default values
+    db_file = '/root/projects/tasmota/sqlite3_db/tasmota_data.db'
+
+    # Log that the script has started
+    # logging.info('Starting tasmota_sqlite3 service')
+
+    # Select URL (using default URL1)
+    url = url1
+    # logging.info(f'Using URL: {url}')
+
+    # Create the database and table if not already created
+    create_db_and_table(db_file)
+
+    # Continuous loop to run every 15 seconds
+    while True:
+        # Fetch and save data 4 times per minute (every 15 seconds)
+        fetch_and_save_data(url, db_file)
+
+        # Wait for 15 seconds before the next request
+        time.sleep(15)
+

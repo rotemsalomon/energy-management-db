@@ -1,0 +1,36 @@
+
+vi /etc/systemd/system/tasmota_sqlite3.service
+[Unit]
+Description=Tasmota Data Fetch Sqlite Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /root/projects/tasmota/get_tasmota_sqlite3.py
+WorkingDirectory=/root/projects/tasmota
+Restart=always
+User=root
+Group=root
+StandardOutput=append:/var/log/tasmota_sqlite3_service.log
+StandardError=append:/var/log/tasmota_sqlite3_service_error.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+sudo systemctl restart tasmota_sqlite3.service
+sudo systemctl status tasmota_sqlite3.service
+
+sudo apt-get install sqlite3
+sqlite3 --version
+
+sqlite3 /root/projects/tasmota/sqlite3_db/tasmota_data.db
+sqlite> SELECT * FROM tasmota_energy_data;
+sqlite> pragma table_info(tasmota_energy_data);
+sqlite> SELECT * FROM tasmota_energy_data ORDER BY id DESC LIMIT 10;
+sqlite> SELECT COUNT(*) FROM tasmota_energy_data;
+SELECT response_time, power FROM tasmota_energy_data ORDER BY id DESC LIMIT 100;
+
+sqlite> .tables
+tasmota_energy_data
+sqlite> .schema tasmota_energy_data

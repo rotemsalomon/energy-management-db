@@ -1,0 +1,8 @@
+vi /etc/systemd/system/tasmota_fetch.service
+sudo systemctl daemon-reload
+sudo systemctl restart tasmota_fetch.service
+sudo systemctl status tasmota_fetch.service
+
+tail -f /var/log/tasmota_fetch_service.log /var/log/tasmota_fetch_service_error.log
+wc -l /root/scripts_rotem/data/borelli_idc.csv
+
