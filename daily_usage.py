@@ -34,10 +34,16 @@ def format_runtime(minutes):
 
 def calculate_co2e_emission(kwh):
     """Calculate CO2e emissions in tonnes."""
-    EF2 = 0.68  # Scope 2 emission factor in kg CO2-e/kWh
-    EF3 = 0.09  # Scope 3 emission factor in kg CO2-e/kWh
-    tCO2e = (kwh * (EF2 + EF3)) / 1000  # Convert to tonnes
-    return tCO2e
+    EF2 = 0.68  # Scope 2 emission factor in kg CO2e/kWh
+    EF3 = 0.09  # Scope 3 emission factor in kg CO2e/kWh
+
+    # Calculate total CO2e in tonnes
+    tCO2e = (q_kwh * (EF2 + EF3)) / 1000  # Convert kg to tonnes
+
+    # Return CO2e value in grams if it's less than 0.5 tonnes
+    if tCO2e < 0.5:
+        return round(tCO2e * 1000, 2)  # Convert to grams
+    return round(tCO2e, 2)  # Return in tonnes
 
 def get_rate_for_response_time(cursor, response_time_str, asset_id):
     """
@@ -242,9 +248,9 @@ def calculate_daily_consumption_by_asset(db_file):
         current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
         daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-        logging.info(f"total_kwh_co2e: {total_kwh_co2e}")
-        logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e}")
-        logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e}")
+        logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
+        logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+        logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
         # Insert or update the record in daily_usage
         cursor.execute('''
