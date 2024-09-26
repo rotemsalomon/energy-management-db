@@ -264,47 +264,47 @@ def calculate_daily_consumption_by_asset(db_file):
         
             logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
-        total_kwh_co2e = calculate_co2e_emission(total_kwh)
-        current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
-        daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
+            total_kwh_co2e = calculate_co2e_emission(total_kwh)
+            current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
+            daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-        logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
-        logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-        logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
-        # Insert or update the record in daily_usage
-        cursor.execute('''
-            INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
-                                    max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
-                                    percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
-                                    daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(asset_id, date, hour) DO UPDATE SET
-                total_kwh = excluded.total_kwh,
-                cnt_comp_on = excluded.cnt_comp_on,
-                cnt_comp_off = excluded.cnt_comp_off,
-                ave_comp_runtime = excluded.ave_comp_runtime,
-                max_comp_runtime = excluded.max_comp_runtime,
-                min_comp_runtime = excluded.min_comp_runtime,
-                update_time = excluded.update_time,
-                total_kwh_charge = excluded.total_kwh_charge,
-                percentage_change_kwh = excluded.percentage_change_kwh,
-                daily_total_kwh = excluded.daily_total_kwh,
-                current_hour_kwh = excluded.current_hour_kwh,
-                total_kwh_co2e = excluded.total_kwh_co2e,
-                daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
-                current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
-                daily_total_kwh_charge = excluded.daily_total_kwh_charge
-        ''', (
-            asset_id, asset_name, current_date.isoformat(), 
-            round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
-            ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-            current_time_str, round(total_kwh_charge, 2), hour, 
-            percentage_change_kwh, round(daily_total_kwh, 2), 
-            round(current_hour_kwh, 2), total_kwh_co2e, 
-            daily_total_kwh_co2e, current_hour_kwh_co2e,
-            round(daily_total_kwh_charge, 2)
-        ))
+            # Insert or update the record in daily_usage
+            cursor.execute('''
+                INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
+                                        max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
+                                        percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
+                                        daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(asset_id, date, hour) DO UPDATE SET
+                    total_kwh = excluded.total_kwh,
+                    cnt_comp_on = excluded.cnt_comp_on,
+                    cnt_comp_off = excluded.cnt_comp_off,
+                    ave_comp_runtime = excluded.ave_comp_runtime,
+                    max_comp_runtime = excluded.max_comp_runtime,
+                    min_comp_runtime = excluded.min_comp_runtime,
+                    update_time = excluded.update_time,
+                    total_kwh_charge = excluded.total_kwh_charge,
+                    percentage_change_kwh = excluded.percentage_change_kwh,
+                    daily_total_kwh = excluded.daily_total_kwh,
+                    current_hour_kwh = excluded.current_hour_kwh,
+                    total_kwh_co2e = excluded.total_kwh_co2e,
+                    daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
+                    current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
+                    daily_total_kwh_charge = excluded.daily_total_kwh_charge
+            ''', (
+                asset_id, asset_name, current_date.isoformat(), 
+                round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
+                ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
+                current_time_str, round(total_kwh_charge, 2), hour, 
+                percentage_change_kwh, round(daily_total_kwh, 2), 
+                round(current_hour_kwh, 2), total_kwh_co2e, 
+                daily_total_kwh_co2e, current_hour_kwh_co2e,
+                round(daily_total_kwh_charge, 2)
+            ))
 
         conn.commit()
         logging.info("Daily consumption and compressor stats updated successfully.")
