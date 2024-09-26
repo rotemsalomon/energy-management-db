@@ -196,7 +196,7 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Initialize compressor_runtimes in asset_data if not already present
             for asset_id in asset_data.keys():
-                power = current_power[asset_id]  # Assuming current_power holds the latest power value
+                power = power[asset_id]  # Assuming current_power holds the latest power value
                 response_time = datetime.now()  # Replace with actual response time logic
 
                 # Detect compressor ON transition
