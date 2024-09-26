@@ -137,7 +137,6 @@ def calculate_daily_consumption_by_asset(db_file):
         compressor_runtimes = []
         total_kwh_charges = {}
         daily_total_kwh = 0.0
-        current_hour_kwh = 0.0
         
         for row in results:
             asset_id, asset_name, power, response_time_str = row
@@ -194,7 +193,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh
-                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
 
             # Compressor transition detection logic
