@@ -241,9 +241,10 @@ def calculate_daily_consumption_by_asset(db_file):
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
-                #logging.info(f"Asset ID: {asset_id}")
-                #logging.info(f"Average Comp Runtime: {ave_comp_runtime}")
                 ave_comp_runtime_str = format_runtime(ave_comp_runtime)
+
+                # Use the asset-specific compressor runtimes list for max/min calculations
+                compressor_runtimes = data['compressor_runtimes']
                 max_comp_runtime = max(compressor_runtimes) if compressor_runtimes else 0
                 max_comp_runtime_str = format_runtime(max_comp_runtime)
                 min_comp_runtime = min(compressor_runtimes) if compressor_runtimes else 0
