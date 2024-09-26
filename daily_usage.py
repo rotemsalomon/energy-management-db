@@ -256,7 +256,7 @@ def calculate_daily_consumption_by_asset(db_file):
             yesterday_record = cursor.fetchone()
             # assign if value exists. Other value of 0.0 is assigned.
             yesterday_kwh = yesterday_record[0] if yesterday_record else 0.0
-
+            logging.info(f"{asset_id}: yesterday_kwh: {yesterday_kwh}")
             # Calculate percentage change_kwh. Again. total_kwh reflects that cummulative kwh usage
             # for an asset for the current day.
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
