@@ -143,7 +143,6 @@ def calculate_daily_consumption_by_asset(db_file):
             asset_id, asset_name, power, response_time_str = row
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # response_time_time = response_time.time() //not used and can be deleted
-            logging.info(f"Checking {current_hour_kwh} value for {asset_id}")
             # Calculate the day of the week (0 = Monday, 6 = Sunday)
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
 
@@ -281,6 +280,7 @@ def calculate_daily_consumption_by_asset(db_file):
             current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
+            logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
