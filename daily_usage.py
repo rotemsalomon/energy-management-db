@@ -160,7 +160,6 @@ def calculate_daily_consumption_by_asset(db_file):
                     'asset_name': asset_name,
                     'current_hour_kwh': 0.00,  # Initialize per-asset current_hour_kwh
                     'last_processed_hour': -1,  # Track the last processed hour
-
                 }
                 if asset_id not in asset_data:
                     logging.warning(f"Initializing data for asset_id: {asset_id}")
@@ -194,27 +193,25 @@ def calculate_daily_consumption_by_asset(db_file):
                 asset_data[asset_id]['current_hour_kwh'] += kwh
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
-            # Initialize compressor_runtimes in asset_data if not already present
-            for asset_id in asset_data.keys():
-                power = power[asset_id]  # Assuming current_power holds the latest power value
-                response_time = datetime.now()  # Replace with actual response time logic
+            # Detect compressor ON transition
+            if previous_power[asset_id] < 100 and power >= 100:
+                asset_data[asset_id]['cnt_comp_on'] += 1
+                compressor_start_times[asset_id] = response_time  # Record compressor start time
+                logging.info(f"Compressor ON for asset {asset_id} at {response_time}")
 
-                # Detect compressor ON transition
-                if previous_power[asset_id] < 100 and power >= 100:
-                    asset_data[asset_id]['cnt_comp_on'] += 1  # Increment ON counter
-                    compressor_start_times[asset_id] = response_time  # Record compressor start time
+            # Detect compressor OFF transition
+            elif previous_power[asset_id] >= 100 and power < 100:
+                asset_data[asset_id]['cnt_comp_off'] += 1
+                logging.info(f"Compressor OFF for asset {asset_id} at {response_time}")
+                if compressor_start_times[asset_id]:
+                    comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0
+                    asset_data[asset_id]['total_comp_runtime'] += comp_runtime
+                    asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)
+                    logging.info(f"Compressor runtime for asset {asset_id}: {comp_runtime} minutes")
+                    compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
 
-                # Detect compressor OFF transition
-                elif previous_power[asset_id] >= 100 and power < 100:
-                    asset_data[asset_id]['cnt_comp_off'] += 1  # Increment OFF counter
-                    if compressor_start_times[asset_id]:
-                        comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
-                        asset_data[asset_id]['total_comp_runtime'] += comp_runtime  # Add to total runtime
-                        asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)  # Append to asset-specific list
-                        compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
-
-                # Update previous power state to current for the next iteration
-                previous_power[asset_id] = power
+            # Update previous power state to current for the next iteration
+            previous_power[asset_id] = power
 
             # Look up the rate based on response_time
             rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
