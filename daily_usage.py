@@ -273,9 +273,9 @@ def calculate_daily_consumption_by_asset(db_file):
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
             
             # Retrieve current_hour_kwh for this asset
-            asset_current_hour_kwh = current_hour_kwh.get(asset_id, 0.0)  # Default to 0.0 if not found
+            asset_current_hour_kwh = current_hour_kwh.get(asset_id)  # Default to 0.0 if not found
 
-            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
