@@ -281,10 +281,10 @@ def calculate_daily_consumption_by_asset(db_file):
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-            #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
-            #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
-            #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
+            logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             # Insert or update the record in daily_usage
             cursor.execute('''
