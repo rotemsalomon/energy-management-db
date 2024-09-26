@@ -60,8 +60,8 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
         WHERE asset_id = ?
     ''', (asset_id,))
     premise_id = cursor.fetchone()[0]
-    logging.info(f"asset_id")
-    
+    logging.info(f"{asset_id}")
+
     # Get the supplier name and plan name from prem_info
     cursor.execute('''
         SELECT supplier_name, supplier_plan_name
