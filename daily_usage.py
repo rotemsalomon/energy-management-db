@@ -271,11 +271,14 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
-        
-            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            
+            # Retrieve current_hour_kwh for this asset
+            asset_current_hour_kwh = current_hour_kwh.get(asset_id, 0.0)  # Default to 0.0 if not found
+
+            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
-            current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
+            current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
             #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
@@ -313,7 +316,7 @@ def calculate_daily_consumption_by_asset(db_file):
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
                 current_time_str, round(total_kwh_charge, 2), hour, 
                 percentage_change_kwh, round(daily_total_kwh, 2), 
-                round(current_hour_kwh, 3), total_kwh_co2e, 
+                round(asset_current_hour_kwh, 3), total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e,
                 round(daily_total_kwh_charge, 2), day_of_week
             ))
