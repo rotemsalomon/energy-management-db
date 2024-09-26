@@ -266,7 +266,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
         
-            #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
