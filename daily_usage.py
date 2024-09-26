@@ -160,7 +160,7 @@ def calculate_daily_consumption_by_asset(db_file):
                     'total_comp_runtime': 0,
                     'asset_name': asset_name,
                     'current_hour_kwh': 0.00,  # Initialize per-asset current_hour_kwh
-                    'last_processed_hour': -1,  # Track the last processed hour
+                    'last_processed_hour': response_time.hour,  # Track the last processed hour
 
                 }
                 if asset_id not in asset_data:
@@ -275,7 +275,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # Retrieve current_hour_kwh for this asset
             asset_current_hour_kwh = current_hour_kwh.get(asset_id, 0.0)  # Default to 0.0 if not found
 
-            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
