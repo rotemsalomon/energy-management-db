@@ -97,9 +97,14 @@ Inb the daily table:
 * percentage_change_kwh stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
 is a % change comparing cumulative kwh usage up to the current hour for both days. 
 
-daily_total_kwh: This should be the cumulative kWh for all assets from the start of the day to the current time.
-total_kwh: This should be the cumulative kWh for each specific asset from the start of the day to the current time.
+
+Per asset:
 current_hour_kwh: This should reflect the cumulative kWh for that specific asset in the current hour.
-percentage_change_kwh: This is the change from the total_kwh value today vs yesterday same time.
+total_kwh: This should be the cumulative kWh for each specific asset from the start of the day to the current time.
 total_kwh_charge: The total kwh charge for the asset until this hour
-daily_total_kwh_charge: Total kwh for all kwh used from the start of the day until current time for all assets.
+percentage_change_kwh: This is the change from the total_kwh value today vs yesterday same time.
+
+
+All assets
+daily_total_kwh: This should be the cumulative kWh for all assets from the start of the day to the current time.
+daily_total_kwh_charge: Total kwh for all kwh used by all assets from the start of the day until current time.
