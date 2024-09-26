@@ -187,14 +187,14 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour:
-                logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
+                #logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
 
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh
-                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
 
             # Compressor transition detection logic
@@ -280,7 +280,7 @@ def calculate_daily_consumption_by_asset(db_file):
             current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-            logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+            #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
@@ -315,7 +315,7 @@ def calculate_daily_consumption_by_asset(db_file):
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
                 current_time_str, round(total_kwh_charge, 2), hour, 
                 percentage_change_kwh, round(daily_total_kwh, 2), 
-                round(current_hour_kwh, 2), total_kwh_co2e, 
+                round(current_hour_kwh, 3), total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e,
                 round(daily_total_kwh_charge, 2), day_of_week
             ))
