@@ -159,7 +159,10 @@ def calculate_daily_consumption_by_asset(db_file):
                     'cnt_comp_on': 0,
                     'cnt_comp_off': 0,
                     'total_comp_runtime': 0,
-                    'asset_name': asset_name
+                    'asset_name': asset_name,
+                    'current_hour_kwh': 0.0,  # Initialize per-asset current_hour_kwh
+                    'last_processed_hour': response_time.hour,  # Track the last processed hour
+
                 }
                 if asset_id not in asset_data:
                     logging.warning(f"Initializing data for asset_id: {asset_id}")
@@ -183,12 +186,17 @@ def calculate_daily_consumption_by_asset(db_file):
             hour = response_time.strftime('%H:%M')  # Format as HH:MM
             current_hour = response_time.hour  # Get the current hour as an integer
 
-            # Check if the response time is today and in the current hour.
-            # If so, add to current_hour_kwh value.
-            if response_time.date() == current_date and response_time.hour == current_hour:
-                logging.info(f"The current {current_hour_kwh} for {asset_id}")
-                current_hour_kwh += kwh
-                #logging.info(f"Adding {kwh} to {current_hour_kwh} for {asset_id}")
+            # Reset current_hour_kwh for the asset if a new hour starts
+            if asset_data[asset_id]['last_processed_hour'] != current_hour:
+                logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
+                asset_data[asset_id]['current_hour_kwh'] = 0.0
+                asset_data[asset_id]['last_processed_hour'] = current_hour
+
+            # If the response time matches the current hour, accumulate kWh for the current hour
+            if response_time.date() == current_date and current_hour == response_time.hour:
+                asset_data[asset_id]['current_hour_kwh'] += kwh
+                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+
 
             # Compressor transition detection logic
             if previous_power[asset_id] < 100 and power >= 100:
