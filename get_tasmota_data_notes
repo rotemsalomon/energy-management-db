@@ -34,3 +34,72 @@ SELECT response_time, power FROM tasmota_energy_data ORDER BY id DESC LIMIT 100;
 sqlite> .tables
 tasmota_energy_data
 sqlite> .schema tasmota_energy_data
+
+SQL Views:
+Create a view that list of an organisation's premises and assets
+Source tables: org_info, prem_info, asset_info
+        ## View name: 
+            ## vInventory_list
+        ## Columns:
+            ## org_id
+            ## org_name
+            ## premise_id
+            ## premise_name
+            ## asset_id
+            ## asset_name
+        Sqlite query:
+            CREATE VIEW vInventory_list AS
+               SELECT DISTINCT
+                org_info.org_id,
+                org_info.org_name,
+                prem_info.premise_id,
+                prem_info.premise_name,
+                asset_info.asset_id,
+                asset_info.name AS asset_name
+               FROM 
+                org_info
+               INNER JOIN prem_info ON prem_info.org_id = org_info.org_id
+               INNER JOIN asset_info ON asset_info.premise_id = prem_info.premise_id;  
+
+Create a view that list a count of an organisation's premises and assets
+Source tables: inventory_view
+        ## View name: 
+            ## vInventory_totals
+        Sqlite query:
+            CREATE VIEW vInventory_totals AS
+               SELECT DISTINCT 
+                org_id,
+               COUNT 
+                (premise_id) as premise_count,
+               COUNT
+                (asset_id) as asset_count
+               FROM 
+                vInventory_list;
+
+
+
+          premiseStatus:
+            type: string
+            description: reachability status of asset
+            example: reachable
+          assetPowerStatus:
+            type: string
+            description: Power status of asset
+            example: on
+
+Turn on headers for SQLite when doing a select
+sqlite> .headers on
+sqlite> .mode table
+
+Inb the daily table:
+* total_kwh: Cumulative kWh for each individual asset for the current day.
+* daily_total_kwh: Cumulative kWh for all assets combined for the current day.
+* percentage_change_kwh stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
+is a % change comparing cumulative kwh usage up to the current hour for both days. 
+
+daily_total_kwh: This should be the cumulative kWh for all assets from the start of the day to the current time.
+total_kwh: This should be the cumulative kWh for each specific asset from the start of the day to the current time.
+current_hour_kwh: This should reflect the cumulative kWh for that specific asset in the current hour.
+percentage_change_kwh: This is the change from the total_kwh value today vs yesterday same time.
+total_kwh_charge: The total kwh charge for the asset until this hour
+daily_total_kwh_charge: Total kwh for all kwh used from the start of the day until current time for all assets.
