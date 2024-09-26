@@ -158,6 +158,9 @@ def calculate_daily_consumption_by_asset(db_file):
                     'total_comp_runtime': 0,
                     'asset_name': asset_name
                 }
+                if asset_id not in asset_data:
+                    logging.info(f"Initializing data for asset_id: {asset_id}")
+                
                 # store current power for the asset_id which is compared against future reading
                 # to see if the compressor has turned on or off.
                 previous_power[asset_id] = power
@@ -186,19 +189,23 @@ def calculate_daily_consumption_by_asset(db_file):
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
                 compressor_start_times[asset_id] = response_time  # Record compressor start time
-                #logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
+                logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
 
             elif previous_power[asset_id] >= 100 and power < 100:
                 asset_data[asset_id]['cnt_comp_off'] += 1
                 if compressor_start_times[asset_id]:
                     comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
-                    #logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
+                    logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
                     asset_data[asset_id]['total_comp_runtime'] += comp_runtime
                     compressor_runtimes.append(comp_runtime)
                     compressor_start_times[asset_id] = None
             # update the value of previous_power for the asset_id, to compare against the next record for that asset_id
             # to determine if compressor state changed.
             previous_power[asset_id] = power
+
+            if power is None:
+                logging.warning(f"Skipping record for asset_id: {asset_id} due to missing power reading")
+                continue  # Skip this record
 
             # Look up the rate based on response_time
             rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
@@ -214,12 +221,11 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
-            logging.info(f"{asset_id}")
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
-                #logging.info(f"Asset ID: {asset_id}")
-                #logging.info(f"Average Comp Runtime: {ave_comp_runtime}")
+                logging.info(f"Asset ID: {asset_id}")
+                logging.info(f"Average Comp Runtime: {ave_comp_runtime}")
                 ave_comp_runtime_str = format_runtime(ave_comp_runtime)
                 max_comp_runtime = max(compressor_runtimes) if compressor_runtimes else 0
                 max_comp_runtime_str = format_runtime(max_comp_runtime)
