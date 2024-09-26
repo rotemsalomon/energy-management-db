@@ -203,13 +203,13 @@ def calculate_daily_consumption_by_asset(db_file):
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
                 compressor_start_times[asset_id] = response_time  # Record compressor start time
-                # logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
+                logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
 
             elif previous_power[asset_id] >= 100 and power < 100:
                 asset_data[asset_id]['cnt_comp_off'] += 1
                 if compressor_start_times[asset_id]:
                     comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
-                    # logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
+                    logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
                     
                     # Update total runtime and append to asset-specific runtimes
                     asset_data[asset_id]['total_comp_runtime'] += comp_runtime
