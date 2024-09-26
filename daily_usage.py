@@ -160,7 +160,7 @@ def calculate_daily_consumption_by_asset(db_file):
                     'total_comp_runtime': 0,
                     'asset_name': asset_name,
                     'current_hour_kwh': 0.00,  # Initialize per-asset current_hour_kwh
-                    'last_processed_hour': response_time.hour,  # Track the last processed hour
+                    'last_processed_hour': -1,  # Track the last processed hour
 
                 }
                 if asset_id not in asset_data:
