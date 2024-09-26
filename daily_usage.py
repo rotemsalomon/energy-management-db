@@ -187,7 +187,8 @@ def calculate_daily_consumption_by_asset(db_file):
             # If so, add to current_hour_kwh value.
             if response_time.date() == current_date and response_time.hour == current_hour:
                 current_hour_kwh += kwh
-            
+                logging.info(f"Adding {current_hour_kwh} for {asset_id}")
+                
             # Compressor transition detection logic
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
@@ -311,7 +312,7 @@ def calculate_daily_consumption_by_asset(db_file):
             ))
 
             conn.commit()
-            
+
         logging.info("Daily consumption and compressor stats updated successfully.")
 
     except Exception as e:
