@@ -60,7 +60,6 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
         WHERE asset_id = ?
     ''', (asset_id,))
     premise_id = cursor.fetchone()[0]
-    logging.info(f"{asset_id}")
 
     # Get the supplier name and plan name from prem_info
     cursor.execute('''
@@ -215,6 +214,7 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
+            logging.info(f"{asset_id}")
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
