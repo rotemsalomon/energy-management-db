@@ -160,6 +160,7 @@ def calculate_daily_consumption_by_asset(db_file):
                     'asset_name': asset_name,
                     'current_hour_kwh': 0.00,  # Initialize per-asset current_hour_kwh
                     'last_processed_hour': -1,  # Track the last processed hour
+                    'compressor_runtimes': [],
                 }
                 if asset_id not in asset_data:
                     logging.warning(f"Initializing data for asset_id: {asset_id}")
@@ -169,8 +170,6 @@ def calculate_daily_consumption_by_asset(db_file):
                 previous_power[asset_id] = power
                 # Time set to None indicating that it is currently off or hasn't been started yet.
                 compressor_start_times[asset_id] = None
-                # Reset the list of runtimes.
-                compressor_runtimes = []
                 # initialise kwh charges to start from 0.
                 total_kwh_charges[asset_id] = 0.0
 
