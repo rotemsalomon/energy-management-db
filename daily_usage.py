@@ -199,22 +199,22 @@ def calculate_daily_consumption_by_asset(db_file):
                 if 'compressor_runtimes' not in asset_data[asset_id]:
                     asset_data[asset_id]['compressor_runtimes'] = []  # Create a separate list for each asset
 
-            # Compressor transition detection logic
-            if previous_power[asset_id] < 100 and power >= 100:
-                asset_data[asset_id]['cnt_comp_on'] += 1
-                compressor_start_times[asset_id] = response_time  # Record compressor start time
-                logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
+                # Compressor transition detection logic
+                if previous_power[asset_id] < 100 and power >= 100:
+                    asset_data[asset_id]['cnt_comp_on'] += 1
+                    compressor_start_times[asset_id] = response_time  # Record compressor start time
+                    logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
 
-            elif previous_power[asset_id] >= 100 and power < 100:
-                asset_data[asset_id]['cnt_comp_off'] += 1
-                if compressor_start_times[asset_id]:
-                    comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
-                    logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
-                    
-                    # Update total runtime and append to asset-specific runtimes
-                    asset_data[asset_id]['total_comp_runtime'] += comp_runtime
-                    asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)  # Append to asset-specific list
-                    compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
+                elif previous_power[asset_id] >= 100 and power < 100:
+                    asset_data[asset_id]['cnt_comp_off'] += 1
+                    if compressor_start_times[asset_id]:
+                        comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
+                        logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
+                        
+                        # Update total runtime and append to asset-specific runtimes
+                        asset_data[asset_id]['total_comp_runtime'] += comp_runtime
+                        asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)  # Append to asset-specific list
+                        compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
 
             # update the value of previous_power for the asset_id, to compare against the next record for that asset_id
             # to determine if compressor state changed.
