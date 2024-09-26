@@ -1,3 +1,6 @@
+# python3 benchmark_asset_daily_entries.py --start_date 2024-09-26 --end_date 2024-09-26 --asset_ids DC234SN,D2209CK09FF60S151
+# python3 benchmark_asset_daily_entries.py --start_date 2024-01-01 --end_date 2024-01-31 --asset_ids DC234SN,AB123XY
+
 import sqlite3
 import argparse
 import logging
@@ -15,7 +18,7 @@ def update_benchmark_entries(db_file, start_date, end_date, asset_ids):
         cursor.execute("""
             UPDATE daily_usage 
             SET is_benchmark = 1
-            WHERE response_time BETWEEN ? AND ?
+            WHERE date BETWEEN ? AND ?
             AND asset_id IN ({})
         """.format(','.join('?' for _ in asset_ids)), (start_date, end_date, *asset_ids_tuple))
 
