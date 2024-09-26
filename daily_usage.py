@@ -235,7 +235,6 @@ def calculate_daily_consumption_by_asset(db_file):
                 ave_comp_runtime_str = max_comp_runtime_str = min_comp_runtime_str = "00:00"
 
             total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
-            logging.info(f"{asset_id}: total_kwh_charge: {total_kwh_charge}")
 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Get the formatted hour for the current record
@@ -262,6 +261,8 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
+        
+        logging.info(f"{asset_id}: total_kwh_charge: {total_kwh}")
 
         logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
