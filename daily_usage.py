@@ -235,6 +235,7 @@ def calculate_daily_consumption_by_asset(db_file):
                 ave_comp_runtime_str = max_comp_runtime_str = min_comp_runtime_str = "00:00"
 
             total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
+            logging.info(f"{asset_id}: total_kwh_charge: {total_kwh_charge}")
 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Get the formatted hour for the current record
@@ -256,7 +257,6 @@ def calculate_daily_consumption_by_asset(db_file):
             yesterday_record = cursor.fetchone()
             # assign if value exists. Other value of 0.0 is assigned.
             yesterday_kwh = yesterday_record[0] if yesterday_record else 0.0
-            logging.info(f"{asset_id}: yesterday_kwh: {yesterday_kwh}")
             # Calculate percentage change_kwh. Again. total_kwh reflects that cummulative kwh usage
             # for an asset for the current day.
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
