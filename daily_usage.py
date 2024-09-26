@@ -143,7 +143,7 @@ def calculate_daily_consumption_by_asset(db_file):
             asset_id, asset_name, power, response_time_str = row
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # response_time_time = response_time.time() //not used and can be deleted
-
+            logging.info(f"Checking {current_hour_kwh} value for {asset_id}")
             # Calculate the day of the week (0 = Monday, 6 = Sunday)
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
 
@@ -186,6 +186,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # Check if the response time is today and in the current hour.
             # If so, add to current_hour_kwh value.
             if response_time.date() == current_date and response_time.hour == current_hour:
+                logging.info(f"The current {current_hour_kwh} for {asset_id}")
                 current_hour_kwh += kwh
                 #logging.info(f"Adding {kwh} to {current_hour_kwh} for {asset_id}")
 
