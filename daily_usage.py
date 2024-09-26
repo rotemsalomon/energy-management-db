@@ -106,7 +106,7 @@ def calculate_daily_consumption_by_asset(db_file):
     cursor = conn.cursor()
 
     try:
-        logging.info("Starting calculation for daily consumption and compressor stats")
+        #logging.info("Starting calculation for daily consumption and compressor stats")
 
         current_date = datetime.now().date()
         start_of_day = datetime.combine(current_date, datetime.min.time())
@@ -196,17 +196,17 @@ def calculate_daily_consumption_by_asset(db_file):
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
                 compressor_start_times[asset_id] = response_time  # Record compressor start time
-                logging.info(f"Compressor ON for asset {asset_id} at {response_time}")
+                #logging.info(f"Compressor ON for asset {asset_id} at {response_time}")
 
             # Detect compressor OFF transition
             elif previous_power[asset_id] >= 100 and power < 100:
                 asset_data[asset_id]['cnt_comp_off'] += 1
-                logging.info(f"Compressor OFF for asset {asset_id} at {response_time}")
+                #logging.info(f"Compressor OFF for asset {asset_id} at {response_time}")
                 if compressor_start_times[asset_id]:
                     comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0
                     asset_data[asset_id]['total_comp_runtime'] += comp_runtime
                     asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)
-                    logging.info(f"Compressor runtime for asset {asset_id}: {comp_runtime} minutes")
+                    #logging.info(f"Compressor runtime for asset {asset_id}: {comp_runtime} minutes")
                     compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
 
             # Update previous power state to current for the next iteration
@@ -271,16 +271,16 @@ def calculate_daily_consumption_by_asset(db_file):
             # Retrieve current_hour_kwh for this asset
             asset_current_hour_kwh = asset_data[asset_id]['current_hour_kwh']
 
-            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-            logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
-            logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
+            #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             # Insert or update the record in daily_usage
             cursor.execute('''
