@@ -144,6 +144,9 @@ def calculate_daily_consumption_by_asset(db_file):
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # response_time_time = response_time.time() //not used and can be deleted
 
+            # Calculate the day of the week (0 = Monday, 6 = Sunday)
+            day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
+
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
             kwh = (power / 1000) * (interval_seconds / 3600)
@@ -277,8 +280,8 @@ def calculate_daily_consumption_by_asset(db_file):
                 INSERT INTO daily_usage (asset_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
                                         max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
                                         percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
-                                        daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                        daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge, day_of_week)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(asset_id, date, hour) DO UPDATE SET
                     total_kwh = excluded.total_kwh,
                     cnt_comp_on = excluded.cnt_comp_on,
@@ -294,7 +297,8 @@ def calculate_daily_consumption_by_asset(db_file):
                     total_kwh_co2e = excluded.total_kwh_co2e,
                     daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
                     current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
-                    daily_total_kwh_charge = excluded.daily_total_kwh_charge
+                    daily_total_kwh_charge = excluded.daily_total_kwh_charge,
+                    day_of_week = excluded.day_of_week
             ''', (
                 asset_id, asset_name, current_date.isoformat(), 
                 round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
@@ -303,10 +307,11 @@ def calculate_daily_consumption_by_asset(db_file):
                 percentage_change_kwh, round(daily_total_kwh, 2), 
                 round(current_hour_kwh, 2), total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e,
-                round(daily_total_kwh_charge, 2)
+                round(daily_total_kwh_charge, 2), day_of_week
             ))
 
-        conn.commit()
+            conn.commit()
+            
         logging.info("Daily consumption and compressor stats updated successfully.")
 
     except Exception as e:
