@@ -126,7 +126,7 @@ def calculate_daily_consumption_by_asset(db_file):
         results = cursor.fetchall()
 
         if not results:
-            logging.info("No data found for the current day")
+            logging.warning("No data found for the current day")
             return
 
         logging.info(f"Fetched {len(results)} records for processing")
@@ -159,7 +159,7 @@ def calculate_daily_consumption_by_asset(db_file):
                     'asset_name': asset_name
                 }
                 if asset_id not in asset_data:
-                    logging.info(f"Initializing data for asset_id: {asset_id}")
+                    logging.warning(f"Initializing data for asset_id: {asset_id}")
                 
                 # store current power for the asset_id which is compared against future reading
                 # to see if the compressor has turned on or off.
@@ -189,13 +189,13 @@ def calculate_daily_consumption_by_asset(db_file):
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
                 compressor_start_times[asset_id] = response_time  # Record compressor start time
-                logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
+                #logging.info(f"Compressor ON detected for asset {asset_id} at {response_time}")
 
             elif previous_power[asset_id] >= 100 and power < 100:
                 asset_data[asset_id]['cnt_comp_off'] += 1
                 if compressor_start_times[asset_id]:
                     comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0  # In minutes
-                    logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
+                    #logging.info(f"Compressor OFF detected for asset {asset_id} at {response_time}. Runtime: {comp_runtime} minutes")
                     asset_data[asset_id]['total_comp_runtime'] += comp_runtime
                     compressor_runtimes.append(comp_runtime)
                     compressor_start_times[asset_id] = None
@@ -224,8 +224,8 @@ def calculate_daily_consumption_by_asset(db_file):
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
-                logging.info(f"Asset ID: {asset_id}")
-                logging.info(f"Average Comp Runtime: {ave_comp_runtime}")
+                #logging.info(f"Asset ID: {asset_id}")
+                #logging.info(f"Average Comp Runtime: {ave_comp_runtime}")
                 ave_comp_runtime_str = format_runtime(ave_comp_runtime)
                 max_comp_runtime = max(compressor_runtimes) if compressor_runtimes else 0
                 max_comp_runtime_str = format_runtime(max_comp_runtime)
@@ -262,15 +262,15 @@ def calculate_daily_consumption_by_asset(db_file):
             # yesterday (refer above).
             percentage_change_kwh = calculate_percentage_change_kwh(total_kwh, yesterday_kwh)
         
-            logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
 
-            logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+            #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             # Insert or update the record in daily_usage
             cursor.execute('''
