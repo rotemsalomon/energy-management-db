@@ -107,8 +107,10 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
     WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
+
     cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
     benchmark_entries = cursor.fetchall()
+    logging.info(f"Benchmark entries: {benchmark_entries}")
 
     # Prepare default values for reductions
     total_kwh_reduction = 0
@@ -124,13 +126,24 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_charge_reduction': total_kwh_charge_reduction,
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
+    # Ensure that current_data contains the necessary fields before performing the calculations.
+    if 'total_kwh' not in current_data or 'total_kwh_co2e' not in current_data or 'total_kwh_charge' not in current_data:
+        logging.error(f"Current data is incomplete: {current_data}")
+        return
     
     # Assume current_data contains keys: 'kwh', 'co2e', 'charge'
+    logging.info(f"Benchmark entries: {benchmark_entries}")
+    if not benchmark_entries:
+        logging.error("No benchmark entries found!")
+        return
+    
     for benchmark in benchmark_entries:
+        logging.info(f"Processing benchmark: {benchmark}")
+        if len(benchmark) != 3:
+            logging.error(f"Unexpected benchmark entry format: {benchmark}")
+            continue  # Skip this entry
+
         benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge = benchmark
-        logging.info(benchmark_total_kwh)
-        logging.info(benchmark_total_kwh_co2e)
-        logging.info(benchmark_total_kwh_charge)
         # Calculate reductions
         total_kwh_reduction = benchmark_total_kwh - current_data['total_kwh']
         total_kwh_co2e_reduction = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
