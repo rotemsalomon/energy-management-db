@@ -105,9 +105,9 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
     SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
-    WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour_of_day = ?
+    WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
-    cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour_of_day']))
+    cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
     benchmark_entries = cursor.fetchall()
 
     # Prepare default values for reductions
