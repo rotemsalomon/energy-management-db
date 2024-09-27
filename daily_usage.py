@@ -185,8 +185,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # response_time_time = response_time.time() //not used and can be deleted
             # Calculate the day of the week (0 = Monday, 6 = Sunday)
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
-            logging.info(f"{day_of_week}")
-            
+
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
             kwh = (power / 1000) * (interval_seconds / 3600)
@@ -268,7 +267,10 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
+            day_of_week = data['day_of_weeek']
 
+            logging.info(f"{day_of_week}")
+            
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
                 ave_comp_runtime_str = format_runtime(ave_comp_runtime)
