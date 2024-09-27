@@ -120,9 +120,9 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     if not benchmark_entries:
         logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
         return {
-            'kwh_reduction': total_kwh_reduction,
-            'charge_reduction': total_kwh_charge_reduction,
-            'co2e_reduction': total_kwh_co2e_reduction
+            'total_kwh_reduction': total_kwh_reduction,
+            'total_kwh_charge_reduction': total_kwh_charge_reduction,
+            'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
     
     # Assume current_data contains keys: 'kwh', 'co2e', 'charge'
