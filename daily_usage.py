@@ -398,17 +398,20 @@ def calculate_daily_consumption_by_asset(db_file):
 
             conn.commit()
             cursor.execute('''
-                INSERT INTO daily_saving (update_time, asset_id, asset_name, date, hour, day_of_week, total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction)
-                VALUES (?,?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (asset_id, data, hour) DO UPDATE SET
+                INSERT INTO daily_saving (
+                    update_time, asset_id, asset_name, date, hour, day_of_week, 
+                    total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (asset_id, date, hour) DO UPDATE SET
                     update_time = excluded.update_time,
                     total_kwh_reduction = excluded.total_kwh_reduction,
                     total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
-                    total_kwh_co2e_reduction = excluded.total_co2e_reduction,
+                    total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction
             ''', (
-                asset_id, asset_name, current_date.isoformat(),
-                round(total_kwh_reduction, 2), total_kwh_charge_reduction, 
-                total_kwh_co2e_reduction
+                current_time_str, asset_id, asset_name, current_date.isoformat(), 
+                hour, day_of_week, round(total_kwh_reduction, 2), 
+                total_kwh_charge_reduction, total_kwh_co2e_reduction
             ))
 
             conn.commit()
