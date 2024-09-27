@@ -318,6 +318,8 @@ def calculate_daily_consumption_by_asset(db_file):
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
+
+            logging.info(f"{day_of_week}")
             
             # Prepare data to past to benchmark reduction function
             current_data = {
@@ -327,7 +329,7 @@ def calculate_daily_consumption_by_asset(db_file):
                 'total_kwh_co2e': total_kwh_co2e,
                 'total_kwh_charge': total_kwh_charge
             }
-            logging.info(f"Current data for {asset_id}: {data['day_of_week']}")
+            logging.info(f"Current data for {asset_id}: {day_of_week}")
             logging.info(f"Current data for {asset_id}: {hour}")
             logging.info(f"Current data for {asset_id}: {total_kwh}")
             logging.info(f"Current data for {asset_id}: {total_kwh_co2e}")
