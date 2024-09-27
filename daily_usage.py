@@ -284,7 +284,7 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
-            day_of_week = response_time.weekday()
+            day_of_week = response_time.strftime('%A')
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
