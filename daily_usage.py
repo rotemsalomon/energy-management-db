@@ -323,15 +323,16 @@ def calculate_daily_consumption_by_asset(db_file):
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
             
-            # Prepare data to past to benchmark reduction function
+            # Prepare data to pass to benchmark reduction function
             current_data = {
-                'day_of_week': day_of_week,  # Accessing day_of_week from the current data
-                'hour': hour,  # Use current_hour instead of data['hour']
+                'day_of_week': data['day_of_week'],  # Use data here
+                'hour_of_day': current_hour,  # Use current_hour directly
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
                 'total_kwh_charge': total_kwh_charge
             }
-            logging.info(f"Current data for {asset_id}: {day_of_week}")
+
+            logging.info(f"Current data for {asset_id}: {data['day_of_week']}")
             logging.info(f"Current data for {asset_id}: {hour}")
             logging.info(f"Current data for {asset_id}: {total_kwh}")
             logging.info(f"Current data for {asset_id}: {total_kwh_co2e}")
@@ -339,13 +340,14 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Run the function and calculate values
             comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
-            
+
             # Extract reduction values if comparison results exist
             if comparison_results:
                 total_kwh_reduction = comparison_results['total_kwh_reduction']
                 total_kwh_charge_reduction = comparison_results['total_kwh_charge_reduction']
                 total_kwh_co2e_reduction = comparison_results['total_kwh_co2e_reduction']
-
+            else:
+                total_kwh_reduction = total_kwh_charge_reduction = total_kwh_co2e_reduction = 0  # Default values if no comparison results
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
