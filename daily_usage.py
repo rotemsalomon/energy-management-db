@@ -271,7 +271,7 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
-            day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
+            day_of_week = response_time.weekday()
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
@@ -325,7 +325,7 @@ def calculate_daily_consumption_by_asset(db_file):
             
             # Prepare data to pass to benchmark reduction function
             current_data = {
-                'day_of_week': data['day_of_week'],  # Use data here
+                'day_of_week': day_of_week,
                 'hour_of_day': current_hour,  # Use current_hour directly
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
