@@ -114,9 +114,9 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     total_kwh_reduction = 0
     total_kwh_charge_reduction = 0
     total_kwh_co2e_reduction = 0
-    logging.info(total_kwh_reduction)
-    logging.info(total_kwh_charge_reduction)
-    logging.info(total_kwh_co2e_reduction)
+    #logging.info(total_kwh_reduction)
+    #logging.info(total_kwh_charge_reduction)
+    #logging.info(total_kwh_co2e_reduction)
     if not benchmark_entries:
         logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
         return {
@@ -128,9 +128,9 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     # Assume current_data contains keys: 'kwh', 'co2e', 'charge'
     for benchmark in benchmark_entries:
         benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge = benchmark
-        #logging.info(current_data['total_kwh'])
-        #logging.info(current_data['total_kwh_co2e'])
-        #logging.info(current_data['total_kwh_charge'])
+        logging.info(benchmark_total_kwh)
+        logging.info(benchmark_total_kwh_co2e)
+        logging.info(benchmark_total_kwh_charge)
         # Calculate reductions
         total_kwh_reduction = benchmark_total_kwh - current_data['total_kwh']
         total_kwh_co2e_reduction = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
