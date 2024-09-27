@@ -101,6 +101,47 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
 
     return applicable_rate if applicable_rate else 0
 
+def compare_with_benchmark(cursor, asset_id, current_data):
+    # Query to get benchmark entries for the given asset_id, day_of_week, and hour
+    query = '''
+    SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
+    WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour_of_day = ?
+    '''
+    cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour_of_day']))
+    benchmark_entries = cursor.fetchall()
+
+    # Prepare default values for reductions
+    total_kwh_reduction = 0
+    total_kwh_charge_reduction = 0
+    total_kwh_co2e_reduction = 0
+
+    if not benchmark_entries:
+        logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
+        return {
+            'kwh_reduction': total_kwh_reduction,
+            'charge_reduction': total_kwh_charge_reduction,
+            'co2e_reduction': total_kwh_co2e_reduction
+        }
+    
+    # Assume current_data contains keys: 'kwh', 'co2e', 'charge'
+    for benchmark in benchmark_entries:
+        benchmark_kwh, benchmark_co2e, benchmark_charge = benchmark
+        
+        # Calculate reductions
+        total_kwh_reduction = benchmark_kwh - current_data['total_kwh']
+        total_kwh_co2e_reduction = benchmark_co2e - current_data['total_kwh_co2e']
+        total_kwh_charge_reduction = benchmark_charge - current_data['total_kwh_charge']
+
+        # Log or store the reductions as needed
+        logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}")
+    
+        # Return reductions as a dictionary
+        return {
+            'total_kwh_reduction': total_kwh_reduction,
+            'total_kwh_charge_reduction': total_kwh_charge_reduction,
+            'total_kwh_co2e_reduction': total_kwh_co2e_reduction
+        }
+
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
@@ -276,6 +317,23 @@ def calculate_daily_consumption_by_asset(db_file):
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
+            
+            # Prepare data to past to benchmark reduction function
+            current_data = {
+                'day_of_week': data['day_of_week'],
+                'hour_of_day': data['hour'],
+                'total_kwh': data['total_kwh'],
+                'total_kwh_co2e': data['total_kwh_co2e'],
+                'total_kwh_charge': data['total_kwh_charge']
+            }
+            # Run the function and calculate values
+            comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
+            
+            # Extract reduction values if comparison results exist
+            if comparison_results:
+                total_kwh_reduction = comparison_results['total_kwh_reduction']
+                total_kwh_charge_reduction = comparison_results['total_kwh_charge_reduction']
+                total_kwh_co2e_reduction = comparison_results['total_kwh_co2e_reduction']
 
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
@@ -318,8 +376,23 @@ def calculate_daily_consumption_by_asset(db_file):
             ))
 
             conn.commit()
+            cursor.execute('''
+                INSERT INTO daily_saving (update_time, asset_id, asset_name, date, hour, day_of_week, total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction)
+                VALUES (?,?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (asset_id, data, hour) DO UPDATE SET
+                    update_time = excluded.update_time,
+                    total_kwh_reduction = excluded.total_kwh_reduction,
+                    total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
+                    total_kwh_co2e_reduction = excluded.total_co2e_reduction,
+            ''', (
+                asset_id, asset_name, current_date.isoformat(),
+                round(total_kwh_reduction, 2), total_kwh_charge_reduction, 
+                total_kwh_co2e_reduction
+            ))
 
-        logging.info("Daily consumption and compressor stats updated successfully.")
+            conn.commit()
+
+        logging.info("Daily consumption and benchmark stats updated successfully.")
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
