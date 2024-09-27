@@ -125,12 +125,14 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     
     # Assume current_data contains keys: 'kwh', 'co2e', 'charge'
     for benchmark in benchmark_entries:
-        benchmark_kwh, benchmark_co2e, benchmark_charge = benchmark
-        
+        benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge = benchmark
+        logging.info(current_data['total_kwh'])
+        logging.info(current_data['total_kwh_co2e'])
+        logging.info(current_data['total_kwh_charge'])
         # Calculate reductions
-        total_kwh_reduction = benchmark_kwh - current_data['total_kwh']
-        total_kwh_co2e_reduction = benchmark_co2e - current_data['total_kwh_co2e']
-        total_kwh_charge_reduction = benchmark_charge - current_data['total_kwh_charge']
+        total_kwh_reduction = benchmark_total_kwh - current_data['total_kwh']
+        total_kwh_co2e_reduction = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
+        total_kwh_charge_reduction = benchmark_total_kwh_charge - current_data['total_kwh_charge']
 
         # Log or store the reductions as needed
         logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}")
@@ -322,13 +324,12 @@ def calculate_daily_consumption_by_asset(db_file):
             # Prepare data to past to benchmark reduction function
             current_data = {
                 'day_of_week': day_of_week,  # Accessing day_of_week from the current data
-                'hour': current_hour,  # Use current_hour instead of data['hour']
+                'hour': hour,  # Use current_hour instead of data['hour']
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
                 'total_kwh_charge': total_kwh_charge
             }
             logging.info(f"Current data for {asset_id}: {day_of_week}")
-            logging.info(f"Current data for {asset_id}: {current_hour}")
             logging.info(f"Current data for {asset_id}: {hour}")
             logging.info(f"Current data for {asset_id}: {total_kwh}")
             logging.info(f"Current data for {asset_id}: {total_kwh_co2e}")
