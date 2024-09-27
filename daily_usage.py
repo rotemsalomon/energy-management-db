@@ -322,7 +322,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # Prepare data to past to benchmark reduction function
             current_data = {
                 'day_of_week': day_of_week,  # Accessing day_of_week from the current data
-                'hour_of_day': current_hour,  # Use current_hour instead of data['hour']
+                'hour': current_hour,  # Use current_hour instead of data['hour']
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
                 'total_kwh_charge': total_kwh_charge
