@@ -329,6 +329,7 @@ def calculate_daily_consumption_by_asset(db_file):
             }
             logging.info(f"Current data for {asset_id}: {day_of_week}")
             logging.info(f"Current data for {asset_id}: {current_hour}")
+            logging.info(f"Current data for {asset_id}: {hour}")
             logging.info(f"Current data for {asset_id}: {total_kwh}")
             logging.info(f"Current data for {asset_id}: {total_kwh_co2e}")
             logging.info(f"Current data for {asset_id}: {total_kwh_charge}")
