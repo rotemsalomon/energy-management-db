@@ -267,7 +267,7 @@ def calculate_daily_consumption_by_asset(db_file):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
-            day_of_week = data['day_of_week']
+            day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
 
             logging.info(f"{day_of_week}")
 
