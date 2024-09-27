@@ -100,7 +100,7 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
         logging.warning(f"No matching rate found for asset_id {asset_id} at {response_time_str}")
 
     return applicable_rate if applicable_rate else 0
-"""
+
 def compare_with_benchmark(cursor, asset_id, current_data):
     # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
@@ -141,7 +141,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_charge_reduction': total_kwh_charge_reduction,
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
-"""
+
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
@@ -318,8 +318,6 @@ def calculate_daily_consumption_by_asset(db_file):
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
-
-            logging.info(f"{day_of_week}")
             
             # Prepare data to past to benchmark reduction function
             current_data = {
