@@ -320,11 +320,11 @@ def calculate_daily_consumption_by_asset(db_file):
             
             # Prepare data to past to benchmark reduction function
             current_data = {
-                'day_of_week': data['day_of_week'],
-                'hour_of_day': data['hour'],
-                'total_kwh': data['total_kwh'],
-                'total_kwh_co2e': data['total_kwh_co2e'],
-                'total_kwh_charge': data['total_kwh_charge']
+                'day_of_week': asset_data['day_of_week'],
+                'hour_of_day': asset_data['hour'],
+                'total_kwh': asset_data['total_kwh'],
+                'total_kwh_co2e': asset_data['total_kwh_co2e'],
+                'total_kwh_charge': asset_data['total_kwh_charge']
             }
             logging.info(f"Current data for {asset_id}: {day_of_week}")
             logging.info(f"Current data for {asset_id}: {hour}")
