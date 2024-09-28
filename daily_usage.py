@@ -107,11 +107,8 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
     WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
-    logging.info(f"Current data day_of_week: {current_data['day_of_week']}")
-    logging.info(f"Current data hour: {current_data['hour']}")
     cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
     benchmark_entries = cursor.fetchall()
-    logging.info(f"Benchmark entries: {benchmark_entries}")
 
     # Prepare default values for reductions
     total_kwh_reduction = 0
