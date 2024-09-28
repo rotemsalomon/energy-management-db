@@ -146,9 +146,10 @@ def compare_with_benchmark(cursor, asset_id, current_data):
 
         benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge = benchmark
         # Calculate reductions
-        total_kwh_reduction = benchmark_total_kwh - current_data['total_kwh']
-        total_kwh_co2e_reduction = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
-        total_kwh_charge_reduction = benchmark_total_kwh_charge - current_data['total_kwh_charge']
+        # Ensure current_data values are converted to float before performing subtraction
+        total_kwh_reduction = float(benchmark_total_kwh) - float(current_data['total_kwh'])
+        total_kwh_co2e_reduction = float(benchmark_total_kwh_co2e) - float(current_data['total_kwh_co2e'])
+        total_kwh_charge_reduction = float(benchmark_total_kwh_charge) - float(current_data['total_kwh_charge'])
 
         # Log or store the reductions as needed
         logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}")
