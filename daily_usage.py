@@ -413,8 +413,8 @@ def calculate_daily_consumption_by_asset(db_file):
                     total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction
             ''', (
                 current_time_str, asset_id, asset_name, current_date.isoformat(), 
-                hour, day_of_week, round(total_kwh_reduction, 2), 
-                total_kwh_charge_reduction, total_kwh_co2e_reduction
+                hour, day_of_week, round(total_kwh_reduction, 3), 
+                round(total_kwh_charge_reduction,3), round(total_kwh_co2e_reduction,3)
             ))
 
             conn.commit()
