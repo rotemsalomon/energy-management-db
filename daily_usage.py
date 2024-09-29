@@ -474,7 +474,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                 asset_id, asset_name, current_date, 
                 round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-                hour, round(total_kwh_charge, 2), hour, 
+                current_time_str, round(total_kwh_charge, 2), hour, 
                 round(percentage_change_kwh,2), round(daily_total_kwh, 2), 
                 round(asset_current_hour_kwh,3), total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e,
