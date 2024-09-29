@@ -179,15 +179,20 @@ def get_missing_hours(db_file):
 
         recorded_hours = set()
         for row in cursor.fetchall():
+            hour_value = row[0]
             try:
-                hour = int(row[0])  # Convert to integer
+                # Check if the hour is in 'HH:MM' format and extract the hour part
+                if isinstance(hour_value, str) and ':' in hour_value:
+                    hour = int(hour_value.split(':')[0])  # Extract the hour (before ':')
+                else:
+                    hour = int(hour_value)  # Direct conversion if already an integer
+                
                 recorded_hours.add(hour)
             except ValueError as ve:
-                logging.error(f"Invalid hour format in the database: {row[0]}")
+                logging.error(f"Invalid hour format in the database: {hour_value}")
         
-        # Calculate the missing hours by finding the difference between all_hours and recorded_hours
+        # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
-        logging.info(f"Missing hours in the function are: {missing_hours}")
 
         # Close the database connection
         conn.close()
