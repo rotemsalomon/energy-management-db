@@ -174,11 +174,11 @@ def get_missing_hours(cursor):
         cursor.execute(query, (current_date, update_time))
 
         recorded_hours = set()
-        update_time = None  # Initialize response_time
             
         for row in cursor.fetchall():
             hour_value, update_time_str = row  # Fetch hour and response_time as string
-            
+            update_time = None  # Initialize response_time
+
             try:
                 # Convert response_time_str to a datetime object
                 update_time = datetime.strptime(update_time_str, '%Y-%m-%d %H:%M:%S')
