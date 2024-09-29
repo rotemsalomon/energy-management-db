@@ -215,7 +215,7 @@ def process_missed_hour(cursor, hour, records):
 
     asset_data = {}
     for row in records:
-        asset_id = row['asset_id']
+        asset_id = row[15]
         logging.info(f"Processing asset_id: {asset_id}")
         asset_data.setdefault(asset_id, []).append(row)
         calculate_daily_consumption_by_asset(cursor, records)
