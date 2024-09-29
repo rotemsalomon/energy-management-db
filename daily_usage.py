@@ -276,7 +276,7 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Set currrent hour for record calculations
             missing_hours = get_missing_hours(cursor)
-            logging.info(f"Missing hour: {missing_hours}")
+            #logging.info(f"Missing hour: {missing_hours}")
             # If missing hours exist
             if missing_hours:
                 # Set current_hour to the first missing hour
