@@ -266,6 +266,7 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Get the current hour from the datetime formatted response time in the record
             current_hour = response_time.hour
+            logging.info(f"The current hour is: {current_hour}")
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
