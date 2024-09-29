@@ -215,24 +215,9 @@ def process_missed_hour(cursor, hour, records):
     logging.info(f"Sample records: {records[:3]}")  # Print the first three records
 
     asset_data = {}
-    for row in records:
-        # Check if 'asset_id' exists in the row
-        if 'asset_id' not in row:
-            logging.warning(f"Missing 'asset_id' in row: {row}")
-            continue  # Skip this row if it doesn't have 'asset_id'
-
-        asset_id = row['asset_id']
-        logging.info(f"{asset_id}")
-        # Process and store asset-specific data
-        asset_data.setdefault(asset_id, []).append(row)
- 
-    # Only call if asset_data has entries
-    if asset_data:
-        calculate_daily_consumption_by_asset(cursor, asset_data)
-        logging.info("Daily consumption and benchmark stats updated successfully.")
-    else:
-        logging.warning("No asset data to process.")
-
+    calculate_daily_consumption_by_asset(cursor, asset_data)
+    logging.info("Daily consumption and benchmark stats updated successfully.")
+    
 def calculate_daily_consumption_by_asset(cursor, asset_data, current_date):
     logging.info(f"Beginning daily consumption calculations")
     previous_power = {}
