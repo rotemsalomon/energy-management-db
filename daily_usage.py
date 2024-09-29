@@ -192,17 +192,17 @@ def get_records_for_missed_hour(cursor, hour):
     ''', (hour.strftime('%Y-%m-%d %H'),))
     return cursor.fetchall()
 
-def process_missed_hour(cursor, hour, data):
+def process_missed_hour(cursor, hour, records):
     logging.info(f"Processing missed hour: {hour.strftime('%Y-%m-%d %H')}")
     
-    if not data:
+    if not records:
         logging.warning("No data found for the current day")
         return
     
-    logging.info(f"Fetched {len(data)} records for processing")
+    logging.info(f"Fetched {len(records)} records for processing")
 
     asset_data = {}
-    for row in data:
+    for row in records:
         asset_id = row['asset_id']
         # Process and store asset-specific data
         asset_data.setdefault(asset_id, []).append(row)
