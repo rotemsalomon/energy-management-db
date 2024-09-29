@@ -182,22 +182,23 @@ def get_missing_hours(cursor):
             response_time_value = row[1]  # The response_time
             logging.info(f"This is value for response_time_value: {response_time_value}")
             
+        for row in cursor.fetchall():
+            hour_value, response_time_str = row  # Fetch hour and response_time as string
+            
             try:
-                # Ensure hour is treated as an integer
+                # Convert response_time_str to a datetime object
+                response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
+                
+                # Check if hour is a string and convert it to an integer
                 if isinstance(hour_value, str) and ':' in hour_value:
-                    hour = int(hour_value.split(':')[0])  # Extract hour if in 'HH:MM' format
-                    logging.info(f"{hour}")
+                    hour = int(hour_value.split(':')[0])  # Extract hour from HH:MM format
                 else:
-                    hour = int(hour_value)  # Convert directly if already an integer
-                    logging.info(f"{hour}")
+                    hour = int(hour_value)  # Directly convert to int if it's already a number
                 
                 recorded_hours.add(hour)
-                response_time = response_time_value  # Update response_time
-                logging.info(f"{response_time}")
-            
-            except ValueError as e:
+            except ValueError as ve:
                 logging.error(f"Invalid hour format in the database: {hour_value}")
-        
+
         # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
         logging.info(f"{missing_hours}")
