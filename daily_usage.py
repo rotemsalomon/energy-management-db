@@ -211,7 +211,6 @@ def process_missed_hour(cursor, hour, records):
     logging.info(f"Fetched {len(records)} records for processing")
 
     # Log the structure of records
-    logging.info(f"Records structure: {[type(row) for row in records]}")
     logging.info(f"Sample records: {records[:3]}")  # Print the first three records
 
     asset_data = {}
