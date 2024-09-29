@@ -219,7 +219,8 @@ def calculate_daily_consumption_by_asset(db_file):
                     'last_processed_hour': -1,  # Track the last processed hour
                     'compressor_runtimes': [],
                 }
-                logging.warning(f"Initializing data for asset_id: {asset_id}")
+                if asset_id not in asset_data:
+                    logging.warning(f"Initializing data for asset_id: {asset_id}")
                 
                 # store current power for the asset_id which is compared against future reading
                 # to see if the compressor has turned on or off.
@@ -307,7 +308,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # Format the hour as HH:00 for the beginning of the hour
             hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
             current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
-            #logging.info(f"current_hour = {current_hour}")
+            logging.info(f"current_hour = {current_hour}")
 
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
