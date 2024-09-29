@@ -356,6 +356,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 
             # Compute daily total kWh charge for all assets
             daily_total_kwh_charge = daily_total_kwh * rate
+            
+        day_of_week = response_time.strftime('%A')
 
         for asset_id, data in asset_data.items():
             total_kwh = data['total_kwh']
@@ -363,7 +365,6 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             cnt_comp_on = data['cnt_comp_on']
             cnt_comp_off = data['cnt_comp_off']
             total_comp_runtime = data['total_comp_runtime']
-            day_of_week = response_time.strftime('%A')
 
             if cnt_comp_on > 0:
                 ave_comp_runtime = total_comp_runtime / cnt_comp_on
@@ -380,7 +381,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 
             total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
 
-            response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
+            if isinstance(response_time, str):
+                response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
             # Get the formatted hour for the current record
             # Set minutes and seconds to zero to get the beginning of the hour
             #response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
@@ -393,7 +395,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
             hour = f"{current_hour:02d}:00"
-            yesterday_date = (current_date - timedelta(days=1)).strftime('%Y-%m-%d')
+            yesterday_date = (response_time - timedelta(days=1)).strftime('%Y-%m-%d')
         
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
