@@ -164,16 +164,16 @@ def get_missing_hours(cursor):
         current_hour = datetime.now().hour
         valid_hours = set(range(current_hour + 1)) # List of hours from 00:00 to the current hour
         
-        # Connect to the SQLite database
+        #Connect to the SQLite database
         #conn = sqlite3.connect(db_file)
         #cursor = conn.cursor()
         
         # Query to get hours for the current day from the daily_usage table
-        query = """
+        query = '''
         SELECT hour
         FROM daily_usage
         WHERE date = ?
-        """
+        '''
         
         cursor.execute(query, (current_date,))
 
@@ -202,7 +202,7 @@ def get_missing_hours(cursor):
         logging.error(f"An error occurred: {e}")
     return []
 
-def calculate_daily_consumption_by_asset(db_file):
+def calculate_daily_consumption_by_asset(db_file, cursor):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
 
