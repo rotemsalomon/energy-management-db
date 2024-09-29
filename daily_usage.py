@@ -171,7 +171,7 @@ def get_missing_hours(db_file):
     query = """
     SELECT hour
     FROM daily_usage
-    WHERE date(update_time) = ?
+    WHERE date = ?
     """
     
     cursor.execute(query, (current_date,))
