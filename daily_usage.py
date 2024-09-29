@@ -184,17 +184,21 @@ def get_missing_hours(cursor):
                 # Ensure hour is treated as an integer
                 if isinstance(hour_value, str) and ':' in hour_value:
                     hour = int(hour_value.split(':')[0])  # Extract hour if in 'HH:MM' format
+                    logging.info(f"{hour}")
                 else:
                     hour = int(hour_value)  # Convert directly if already an integer
+                    logging.info(f"{hour}")
                 
                 recorded_hours.add(hour)
                 response_time = response_time_value  # Update response_time
+                logging.info(f"{response_time}")
             
             except ValueError as e:
                 logging.error(f"Invalid hour format in the database: {hour_value}")
         
         # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
+        logging.info(f"{missing_hours}")
         
         return missing_hours, response_time, current_date  # Return missing hours, last response_time, and current_date
     
