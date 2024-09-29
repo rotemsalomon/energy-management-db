@@ -267,6 +267,8 @@ def calculate_daily_consumption_by_asset(db_file):
             # current_hour = response_time.hour
 
             missing_hours = get_missing_hours(db_file)
+            logging.info(f"Missing hour: {missing_hours}")
+
 
             # If missing hours exist
             if missing_hours:
@@ -277,7 +279,7 @@ def calculate_daily_consumption_by_asset(db_file):
             else:
                 # Otherwise, set current_hour to the hour from response_time
                 current_hour = response_time.hour
-                logging.info(f"Missing hour: {current_hour}")
+                logging.info(f"Current hour: {current_hour}")
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
