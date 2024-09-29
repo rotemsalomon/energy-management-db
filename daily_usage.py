@@ -437,11 +437,15 @@ def calculate_daily_consumption_by_asset(cursor, asset_data, current_date):
 
 def handle_missed_hours(cursor):
     last_update_time = get_last_update_time(cursor)
+    logging.info(f"Last update time: {last_update_time}")
+
     missed_hours = get_missed_hours(last_update_time)
+    logging.info(f"Number of missed hours: {missed_hours}")
 
     for hour in missed_hours:
         records = get_records_for_missed_hour(cursor, hour)
         if records:
+            logging.info(f"Processing for missed hour: {hour}")
             process_missed_hour(cursor, hour, records)
 
     # After processing missed hours, run for the current hour
