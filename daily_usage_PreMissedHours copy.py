@@ -157,90 +157,35 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_charge_reduction': total_kwh_charge_reduction,
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
-def get_missing_hours(cursor):
+
+def calculate_daily_consumption_by_asset(db_file):
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+
     try:
-        # Get current date in 'YYYY-MM-DD' format
-        current_date = datetime.now().strftime('%Y-%m-%d')
-        current_hour = datetime.now().hour
-        valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
-        
-        # Query to get hours for the current day from the daily_usage table
-        query = '''
-        SELECT hour
-        FROM daily_usage
-        WHERE date = ?
-        '''
-        
-        cursor.execute(query, (current_date,))
+        #logging.info("Starting calculation for daily consumption and compressor stats")
 
-        recorded_hours = set()
-        response_time = None  # Initialize response_time
-        
-        for row in cursor.fetchall():
-            hour_value = row[0]  # The hour (should be an INTEGER)
-            response_time_value = row[1]  # The response_time
-            
-            try:
-                # Ensure hour is treated as an integer
-                if isinstance(hour_value, str) and ':' in hour_value:
-                    hour = int(hour_value.split(':')[0])  # Extract hour if in 'HH:MM' format
-                else:
-                    hour = int(hour_value)  # Convert directly if already an integer
-                
-                recorded_hours.add(hour)
-                response_time = response_time_value  # Update response_time
-            
-            except ValueError as e:
-                logging.error(f"Invalid hour format in the database: {hour_value}")
-        
-        # Calculate the missing hours by subtracting recorded hours from valid hours
-        missing_hours = sorted(valid_hours - recorded_hours)
-        
-        return missing_hours, response_time, current_date  # Return missing hours, last response_time, and current_date
-    
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-    
-    return [], None, None  # Return empty list and None for response_time and current_date in case of error
+        current_date = datetime.now().date()
+        start_of_day = datetime.combine(current_date, datetime.min.time())
+        end_of_day = start_of_day + timedelta(days=1)
 
-def calculate_daily_consumption_by_asset(cursor):
-        
-        missing_hours, response_time, current_date = get_missing_hours(cursor)  # Get missing hours, response_time, and current_date
-
-        if missing_hours:
-            for current_hour in missing_hours:
-                # Process metrics for current_hour
-                process_metrics_for_hour(cursor, current_hour, current_date)  # Pass current_hour and current_date directly
-                
-                # Log the processed hour (optional)
-                logging.info(f"Processed metrics for missing hour: {current_hour}")
-
-            # After processing all missing hours, set current_hour to the hour from response_time
-            if response_time:  # Check if response_time is valid
-                current_hour = response_time.hour
-                logging.info(f"Set current hour to response_time: {current_hour}")
-            else:
-                logging.warning("No valid response_time found.")
-
-        else:
-            # If no missing hours, set current_hour to the hour from response_time
-            if response_time:  # Check if response_time is valid
-                current_hour = response_time.hour
-                logging.info(f"Current hour: {current_hour}")
-            else:
-                logging.warning("No valid response_time found.")
-                current_hour = None  # Or handle as appropriate
-
-def process_metrics_for_hour(conn, cursor, current_hour, current_date):
-    try:
-        query = '''
+        start_of_day_str = start_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        # get all records from tasmota_energy_data from the beginning and end of the day
+        # (essentially until now)
+        query = """
         SELECT asset_id, asset_name, power, response_time
         FROM tasmota_energy_data
-        WHERE hour = ?
-        '''
-        
-        cursor.execute(query, (current_hour,))
-        results = cursor.fetchall()  # Fetch results for the current hour
+        WHERE response_time >= ? AND response_time < ?
+        ORDER BY response_time
+        """
+        cursor.execute(query, (start_of_day_str, end_of_day_str))
+        results = cursor.fetchall()
+
+        if not results:
+            logging.warning("No data found for the current day")
+            return
+
         logging.info(f"Fetched {len(results)} records for processing")
 
         asset_data = {}
@@ -249,16 +194,17 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         compressor_runtimes = []
         total_kwh_charges = {}
         daily_total_kwh = 0.0
-
+        
         for row in results:
-            # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
-            # Convert timestamp in the format '%Y-%m-%d %H:%M:%S' (e.g., '2024-09-29 10:15:00')
-            # to datetime format (%Y-%m-%d %H:%M:%S) eg. 2024-09-29-10-15-00 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
-            # Make response time as string again and extract day of the week.
+            # response_time_time = response_time.time() //not used and can be deleted
+            # Calculate the day of the week (0 = Monday, 6 = Sunday)
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
 
+            # Assume 4 measurements per minute, and calculate kWh per measurement
+            interval_seconds = 60 / 4
+            kwh = (power / 1000) * (interval_seconds / 3600)
             # Check is asset_id existing in our result array. If not, this means it is
             # the 1st time we are processing the data for this asset_id in the day.
             if asset_id not in asset_data:
@@ -273,34 +219,34 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                     'last_processed_hour': -1,  # Track the last processed hour
                     'compressor_runtimes': [],
                 }
-                logging.warning(f"Initializing data for asset_id: {asset_id}")
+                if asset_id not in asset_data:
+                    logging.warning(f"Initializing data for asset_id: {asset_id}")
                 
-                # Set initial values to calculate compressor state:
-                previous_power[asset_id] = power # first power reading is to also equal previous_power
-                compressor_start_times[asset_id] = None # Record compressor state as off
-                total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
+                # store current power for the asset_id which is compared against future reading
+                # to see if the compressor has turned on or off.
+                previous_power[asset_id] = power
+                # Time set to None indicating that it is currently off or hasn't been started yet.
+                compressor_start_times[asset_id] = None
+                # initialise kwh charges to start from 0.
+                total_kwh_charges[asset_id] = 0.0
 
-            # Assume 4 measurements per minute, and calculate kWh per measurement
-            interval_seconds = 60 / 4
-            kwh = (power / 1000) * (interval_seconds / 3600)
+            # Cumulative kWh for this asset. Add kwh (above) to the current asset_id total_kwh value.
+            asset_data[asset_id]['total_kwh'] += kwh
+            # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
+            daily_total_kwh += kwh
 
-            # Cumulative kWh usage for this asset.
-            asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
-            # Cumulative kwh for all assets.
-            daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
-
-            # Get the current hour from the datetime formatted response time in the record
-            # current_hour = response_time.hour
+            # Get the current hour from the response time
+            current_hour = response_time.hour
 
             # Reset current_hour_kwh for the asset if a new hour starts
-            if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
+            if asset_data[asset_id]['last_processed_hour'] != current_hour:
                 #logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
-                asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
-                asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
+                asset_data[asset_id]['current_hour_kwh'] = 0.0
+                asset_data[asset_id]['last_processed_hour'] = current_hour
 
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
-                asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
+                asset_data[asset_id]['current_hour_kwh'] += kwh
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
             # Detect compressor ON transition
@@ -328,7 +274,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             kwh_charge = kwh * rate
             total_kwh_charges[asset_id] += kwh_charge
 
-            # Compute daily total kWh charge for all assets
+            # Compute daily total kWh charge
             daily_total_kwh_charge = daily_total_kwh * rate
 
         for asset_id, data in asset_data.items():
@@ -357,17 +303,16 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Get the formatted hour for the current record
             # Set minutes and seconds to zero to get the beginning of the hour
-            #response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
+            response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
 
             # Format the hour as HH:00 for the beginning of the hour
-            #hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
-            #current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
-            #logging.info(f"current_hour = {current_hour}")
-            
+            hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
+            current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
+            logging.info(f"current_hour = {current_hour}")
+
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
-            hour = f"{current_hour:02d}:00"
-        
+
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
                 SELECT total_kwh FROM daily_usage WHERE asset_id = ? AND date = ? AND hour = ?
@@ -444,7 +389,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                 asset_id, asset_name, current_date.isoformat(), 
                 round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-                hour, round(total_kwh_charge, 2), hour, 
+                current_time_str, round(total_kwh_charge, 2), hour, 
                 round(percentage_change_kwh,2), round(daily_total_kwh, 2), 
                 round(asset_current_hour_kwh,3), total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e,
@@ -481,7 +426,6 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 def main():
     # Run the function directly for testing
     calculate_daily_consumption_by_asset(db_file)
-    #get_missing_hours(db_file)
 
     # Schedule the task to run at the beginning of every hour
     schedule.every().hour.at(":00").do(calculate_daily_consumption_by_asset, db_file=db_file)
