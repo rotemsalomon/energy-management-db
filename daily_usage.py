@@ -166,7 +166,7 @@ def get_missing_hours(cursor):
         
         # Query to get hours for the current day from the daily_usage table
         query = '''
-        SELECT hour, response_time
+        SELECT hour, update_time
         FROM daily_usage
         WHERE date = ?
         '''
