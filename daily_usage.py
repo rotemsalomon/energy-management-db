@@ -211,9 +211,9 @@ def calculate_daily_consumption_by_asset(db_file):
     try:
         # Get missing hours and associated data
         missing_hours, update_time, current_date = get_missing_hours(cursor)
-        logging.info(f"These are the missing hours: {missing_hours}")
-        logging.info(f"This is the response time: {update_time}")
-        logging.info(f"This is the current date: {current_date}")
+        # logging.info(f"These are the missing hours: {missing_hours}")
+        #logging.info(f"This is the response time: {update_time}")
+        #logging.info(f"This is the current date: {current_date}")
 
         if missing_hours:
             for current_hour in missing_hours:
