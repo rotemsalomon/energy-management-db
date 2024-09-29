@@ -228,17 +228,6 @@ def calculate_daily_consumption_by_asset(db_file):
         missing_hours = get_missing_hours(db_file)
         logging.info(f"Missing hour: {missing_hours}")
 
-        # If missing hours exist
-        if missing_hours:
-            # Set current_hour to the first missing hour
-            current_hour = missing_hours[0]
-            logging.info(f"Missing hour: {current_hour}")
-
-        else:
-            # Otherwise, set current_hour to the hour from response_time
-            current_hour = response_time.hour
-            logging.info(f"Current hour: {current_hour}")
-
         for row in results:
             # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
@@ -280,6 +269,17 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # Get the current hour from the datetime formatted response time in the record
             # current_hour = response_time.hour
+
+            # If missing hours exist
+            if missing_hours:
+                # Set current_hour to the first missing hour
+                current_hour = missing_hours[0]
+                logging.info(f"Missing hour: {current_hour}")
+
+            else:
+                # Otherwise, set current_hour to the hour from response_time
+                current_hour = response_time.hour
+                logging.info(f"Current hour: {current_hour}")
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
@@ -349,10 +349,20 @@ def calculate_daily_consumption_by_asset(db_file):
             #response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
 
             # Format the hour as HH:00 for the beginning of the hour
-            hour = datetime.strptime(f'{current_hour}:00', '%H:%M').strftime('%H:%M')
             #hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
             #current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
             #logging.info(f"current_hour = {current_hour}")
+            
+            if missing_hours:
+                # Set hour to the first missing hour
+                current_hour = missing_hours[0]
+                hour = datetime.strptime(f'{current_hour}:00', '%H:%M').strftime('%H:%M')
+                logging.info(f"Missing hour: {current_hour}")
+
+            else:
+                # Otherwise, set current_hour to the hour from response_time
+                hour = response_time.hour
+                logging.info(f"Current hour: {current_hour}")
 
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
