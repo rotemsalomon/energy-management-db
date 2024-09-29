@@ -246,10 +246,9 @@ def calculate_daily_consumption_by_asset(db_file):
 
 def process_metrics_for_hour(conn, cursor, current_hour, current_date):
     try:
-        start_of_day = datetime.combine(current_date, datetime.min.time())
-        end_of_day = start_of_day + timedelta(days=1)
+        end_of_day = current_date + timedelta(days=1)
 
-        start_of_day_str = start_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        start_of_day_str = current_data.strftime('%Y-%m-%d %H:%M:%S')
         end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S')
         # get all records from tasmota_energy_data from the beginning and end of the day
         # (essentially until now)
