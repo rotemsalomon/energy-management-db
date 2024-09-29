@@ -219,7 +219,7 @@ def process_missed_hour(cursor, hour, records):
         #logging.info(f"Processing asset_id: {asset_id}")
         asset_data.setdefault(asset_id, []).append(row)
     
-    logging.info(f"{asset_data}")    
+    #logging.info(f"{asset_data}")    
     calculate_daily_consumption_by_asset(cursor, asset_data)
     logging.info("Daily consumption and benchmark stats updated successfully.")
     
@@ -232,6 +232,7 @@ def calculate_daily_consumption_by_asset(cursor, asset_data, current_date):
     daily_total_kwh = 0.0
 
     for row in asset_data:
+        logging.info(">>>>>>>>>>>>>>>>>>>>>>testing")
         asset_id, asset_name, power, response_time_str = row
         response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
         # response_time_time = response_time.time() //not used and can be deleted
