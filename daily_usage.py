@@ -470,7 +470,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                     daily_total_kwh_charge = excluded.daily_total_kwh_charge,
                     day_of_week = excluded.day_of_week
             ''', (
-                asset_id, asset_name, current_date.isoformat(), 
+                asset_id, asset_name, current_date, 
                 round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
                 hour, round(total_kwh_charge, 2), hour, 
@@ -493,7 +493,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                     total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
                     total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction
             ''', (
-                current_time_str, asset_id, asset_name, current_date.isoformat(), 
+                current_time_str, asset_id, asset_name, current_date, 
                 hour, day_of_week, round(total_kwh_reduction, 3), 
                 round(total_kwh_charge_reduction,3), round(total_kwh_co2e_reduction,3)
             ))
