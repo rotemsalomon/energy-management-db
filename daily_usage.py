@@ -218,15 +218,13 @@ def calculate_daily_consumption_by_asset(db_file):
         if missing_hours:
             for current_hour in missing_hours:
                 # Process metrics for current_hour
+                logging.info(f"Processing metrics for missing hour: {current_hour}")
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)  # Pass current_hour and current_date directly
-                
-                # Log the processed hour (optional)
-                logging.info(f"Processed metrics for missing hour: {current_hour}")
 
             # After processing all missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
                 current_hour = update_time.hour
-                logging.info(f"Set current hour to response_time: {current_hour}")
+                # logging.info(f"Response time valid and is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
 
@@ -234,7 +232,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # If no missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
                 current_hour = update_time.hour
-                logging.info(f"Current hour: {current_hour}")
+                logging.info(f"No missing hours. Current hour is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
                 current_hour = None  # Or handle as appropriate
