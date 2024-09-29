@@ -169,7 +169,7 @@ def get_missing_hours(db_file):
     
     # Query to get hours for the current day from the daily_usage table
     query = """
-    SELECT strftime('%H', update_time) as hour
+    SELECT hour
     FROM daily_usage
     WHERE date(update_time) = ?
     """
