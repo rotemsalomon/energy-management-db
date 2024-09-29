@@ -218,8 +218,9 @@ def process_missed_hour(cursor, hour, records):
         asset_id = row[15]
         logging.info(f"Processing asset_id: {asset_id}")
         asset_data.setdefault(asset_id, []).append(row)
-        calculate_daily_consumption_by_asset(cursor, asset_data)
-        logging.info("Daily consumption and benchmark stats updated successfully.")
+        
+    calculate_daily_consumption_by_asset(cursor, asset_data)
+    logging.info("Daily consumption and benchmark stats updated successfully.")
     
 def calculate_daily_consumption_by_asset(cursor, asset_data, current_date):
     logging.info(f"Beginning daily consumption calculations")
