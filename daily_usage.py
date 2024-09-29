@@ -202,7 +202,7 @@ def get_missing_hours(cursor):
         logging.error(f"An error occurred: {e}")
     return []
 
-def calculate_daily_consumption_by_asset(db_file, cursor):
+def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
 
@@ -282,7 +282,7 @@ def calculate_daily_consumption_by_asset(db_file, cursor):
             # current_hour = response_time.hour
 
             # Set currrent hour for record calculations
-            missing_hours = get_missing_hours(db_file)
+            missing_hours = get_missing_hours(cursor)
             logging.info(f"Missing hour: {missing_hours}")
             # If missing hours exist
             if missing_hours:
