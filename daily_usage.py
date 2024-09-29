@@ -393,11 +393,12 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
             hour = f"{current_hour:02d}:00"
+            yesterday_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).isoformat()
         
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
                 SELECT total_kwh FROM daily_usage WHERE asset_id = ? AND date = ? AND hour = ?
-            ''', (asset_id, (current_date - timedelta(days=1)).isoformat(), hour))
+            ''', (asset_id, yesterday_date, hour))
             # set yesterday_record to be the 1st record in the same hour yesterday using fetchone() function.
             yesterday_record = cursor.fetchone()
             # assign if value exists. Other value of 0.0 is assigned.
