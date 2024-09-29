@@ -157,7 +157,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_charge_reduction': total_kwh_charge_reduction,
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
-def get_missing_hours(db_file):
+def get_missing_hours(cursor):
     try:
         # Get current date in 'YYYY-MM-DD' format
         current_date = datetime.now().strftime('%Y-%m-%d')
@@ -165,8 +165,8 @@ def get_missing_hours(db_file):
         valid_hours = set(range(current_hour + 1)) # List of hours from 00:00 to the current hour
         
         # Connect to the SQLite database
-        conn = sqlite3.connect(db_file)
-        cursor = conn.cursor()
+        #conn = sqlite3.connect(db_file)
+        #cursor = conn.cursor()
         
         # Query to get hours for the current day from the daily_usage table
         query = """
@@ -195,7 +195,7 @@ def get_missing_hours(db_file):
         missing_hours = sorted(valid_hours - recorded_hours)
 
         # Close the database connection
-        conn.close()
+        #conn.close()
         
         return missing_hours
     except Exception as e:
