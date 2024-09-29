@@ -209,6 +209,7 @@ def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     try:
+        current_date = datetime.now().strftime('%Y-%m-%d')
         missing_hours, response_time, current_date = get_missing_hours(cursor)  # Get missing hours, response_time, and current_date
 
         if missing_hours:
