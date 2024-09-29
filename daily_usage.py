@@ -193,10 +193,19 @@ def get_records_for_missed_hour(cursor, hour):
     return cursor.fetchall()
 
 def process_missed_hour(cursor, hour, records):
-    logging.info(f"Processing missed hour: {hour.strftime('%Y-%m-%d %H')}")
+    # Log the hour being processed
+    if isinstance(hour, datetime):
+        logging.info(f"Processing missed hour: {hour.strftime('%Y-%m-%d %H')}")
+    else:
+        logging.warning(f"Invalid hour format: {hour}. Expected a datetime object.")
+        return
     
-    if not records:
-        logging.warning("No data found for the current day")
+    # Log the records before the loop
+    logging.info(f"Fetched records: {records}")
+
+    # Check if records is iterable and has items
+    if not records or not isinstance(records, (list, tuple)):
+        logging.warning(f"No data found for hour: {hour.strftime('%Y-%m-%d %H')}")
         return
     
     logging.info(f"Fetched {len(records)} records for processing")
@@ -207,9 +216,13 @@ def process_missed_hour(cursor, hour, records):
         logging.info(f"{asset_id}")
         # Process and store asset-specific data
         asset_data.setdefault(asset_id, []).append(row)
-
-    calculate_daily_consumption_by_asset(cursor, asset_data)
-    logging.info("Daily consumption and benchmark stats updated successfully.")
+ 
+    # Only call if asset_data has entries
+    if asset_data:
+        calculate_daily_consumption_by_asset(cursor, asset_data)
+        logging.info("Daily consumption and benchmark stats updated successfully.")
+    else:
+        logging.warning("No asset data to process.")
 
 def calculate_daily_consumption_by_asset(cursor, asset_data, current_date):
     logging.info(f"Beginning daily consumption calculations")
