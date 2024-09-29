@@ -218,7 +218,7 @@ def calculate_daily_consumption_by_asset(db_file):
         if missing_hours:
             for current_hour in missing_hours:
                 # Process metrics for current_hour
-                process_metrics_for_hour(cursor, current_hour, current_date)  # Pass current_hour and current_date directly
+                process_metrics_for_hour(conn, cursor, current_hour, current_date)  # Pass current_hour and current_date directly
                 
                 # Log the processed hour (optional)
                 logging.info(f"Processed metrics for missing hour: {current_hour}")
