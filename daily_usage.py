@@ -201,7 +201,7 @@ def process_missed_hour(cursor, hour, records):
         return
     
     # Log the records before the loop
-    logging.info(f"Fetched records: {records}")
+    #logging.info(f"Fetched records: {records}")
 
     # Check if records is iterable and has items
     if not records or not isinstance(records, (list, tuple)):
@@ -210,8 +210,17 @@ def process_missed_hour(cursor, hour, records):
     
     logging.info(f"Fetched {len(records)} records for processing")
 
+    # Log the structure of records
+    logging.info(f"Records structure: {[type(row) for row in records]}")
+    logging.info(f"Sample records: {records[:3]}")  # Print the first three records
+
     asset_data = {}
     for row in records:
+        # Check if 'asset_id' exists in the row
+        if 'asset_id' not in row:
+            logging.warning(f"Missing 'asset_id' in row: {row}")
+            continue  # Skip this row if it doesn't have 'asset_id'
+
         asset_id = row['asset_id']
         logging.info(f"{asset_id}")
         # Process and store asset-specific data
