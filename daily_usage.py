@@ -181,6 +181,7 @@ def get_missing_hours(db_file):
     
     # Calculate the missing hours by finding the difference between all_hours and recorded_hours
     missing_hours = sorted(valid_hours - recorded_hours)
+    logging.info(f"Missing hours in the function are: {missing_hours}")
     
     # Close the database connection
     conn.close()
