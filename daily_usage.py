@@ -223,10 +223,6 @@ def calculate_daily_consumption_by_asset(db_file):
         compressor_runtimes = []
         total_kwh_charges = {}
         daily_total_kwh = 0.0
-        
-        # Set currrent hour for record calculations
-        missing_hours = get_missing_hours(db_file)
-        logging.info(f"Missing hour: {missing_hours}")
 
         for row in results:
             # Extract the four values for every row in the dB derived from the query above
@@ -270,6 +266,9 @@ def calculate_daily_consumption_by_asset(db_file):
             # Get the current hour from the datetime formatted response time in the record
             # current_hour = response_time.hour
 
+            # Set currrent hour for record calculations
+            missing_hours = get_missing_hours(db_file)
+            logging.info(f"Missing hour: {missing_hours}")
             # If missing hours exist
             if missing_hours:
                 # Set current_hour to the first missing hour
