@@ -158,35 +158,44 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
 def get_missing_hours(db_file):
-    # Get current date in 'YYYY-MM-DD' format
-    current_date = datetime.now().strftime('%Y-%m-%d')
-    current_hour = datetime.now().hour
-    valid_hours = set(range(current_hour + 1)) # List of hours from 00:00 to the current hour
-    
-    # Connect to the SQLite database
-    conn = sqlite3.connect(db_file)
-    cursor = conn.cursor()
-    
-    # Query to get hours for the current day from the daily_usage table
-    query = """
-    SELECT hour
-    FROM daily_usage
-    WHERE date = ?
-    """
-    
-    cursor.execute(query, (current_date,))
-    
-    # Fetch the results and convert them to a set of integers (hours)
-    recorded_hours = {int(row[0]) for row in cursor.fetchall()}
-    
-    # Calculate the missing hours by finding the difference between all_hours and recorded_hours
-    missing_hours = sorted(valid_hours - recorded_hours)
-    logging.info(f"Missing hours in the function are: {missing_hours}")
-    
-    # Close the database connection
-    conn.close()
-    
-    return missing_hours
+    try:
+        # Get current date in 'YYYY-MM-DD' format
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        current_hour = datetime.now().hour
+        valid_hours = set(range(current_hour + 1)) # List of hours from 00:00 to the current hour
+        
+        # Connect to the SQLite database
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+        
+        # Query to get hours for the current day from the daily_usage table
+        query = """
+        SELECT hour
+        FROM daily_usage
+        WHERE date = ?
+        """
+        
+        cursor.execute(query, (current_date,))
+
+        recorded_hours = set()
+        for row in cursor.fetchall():
+            try:
+                hour = int(row[0])  # Convert to integer
+                recorded_hours.add(hour)
+            except ValueError as ve:
+                logging.error(f"Invalid hour format in the database: {row[0]}")
+        
+        # Calculate the missing hours by finding the difference between all_hours and recorded_hours
+        missing_hours = sorted(valid_hours - recorded_hours)
+        logging.info(f"Missing hours in the function are: {missing_hours}")
+
+        # Close the database connection
+        conn.close()
+        
+        return missing_hours
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+    return []
 
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
