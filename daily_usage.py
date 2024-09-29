@@ -207,8 +207,10 @@ def get_missing_hours(cursor):
     
     return [], None, None  # Return empty list and None for response_time and current_date in case of error
 
-def calculate_daily_consumption_by_asset(cursor):
-        
+def calculate_daily_consumption_by_asset(db_file):
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    try:
         missing_hours, response_time, current_date = get_missing_hours(cursor)  # Get missing hours, response_time, and current_date
 
         if missing_hours:
@@ -234,6 +236,8 @@ def calculate_daily_consumption_by_asset(cursor):
             else:
                 logging.warning("No valid response_time found.")
                 current_hour = None  # Or handle as appropriate
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
 
 def process_metrics_for_hour(conn, cursor, current_hour, current_date):
     try:
