@@ -349,7 +349,7 @@ def calculate_daily_consumption_by_asset(db_file):
             #response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
 
             # Format the hour as HH:00 for the beginning of the hour
-            hour = current_hour.strftime('%H:%M')
+            hour = datetime.strptime(f'{current_hour}:00', '%H:%M').strftime('%H:%M')
             #hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
             #current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
             #logging.info(f"current_hour = {current_hour}")
