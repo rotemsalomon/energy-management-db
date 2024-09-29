@@ -246,16 +246,28 @@ def calculate_daily_consumption_by_asset(db_file):
 
 def process_metrics_for_hour(conn, cursor, current_hour, current_date):
     try:
-        query = '''
+        start_of_day = datetime.combine(current_date, datetime.min.time())
+        end_of_day = start_of_day + timedelta(days=1)
+
+        start_of_day_str = start_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        # get all records from tasmota_energy_data from the beginning and end of the day
+        # (essentially until now)
+        query = """
         SELECT asset_id, asset_name, power, response_time
         FROM tasmota_energy_data
-        WHERE hour = ?
-        '''
-        
-        cursor.execute(query, (current_hour, current_date))
-        results = cursor.fetchall()  # Fetch results for the current hour
-        logging.info(f"Fetched {len(results)} records for processing")
+        WHERE response_time >= ? AND response_time < ?
+        ORDER BY response_time
+        """
+        cursor.execute(query, (start_of_day_str, end_of_day_str))
+        results = cursor.fetchall()
 
+        if not results:
+            logging.warning("No data found for the current day")
+            return
+
+        logging.info(f"Fetched {len(results)} records for processing")
+       
         asset_data = {}
         previous_power = {}
         compressor_start_times = {}
