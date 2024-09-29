@@ -175,12 +175,6 @@ def get_missing_hours(cursor):
 
         recorded_hours = set()
         response_time = None  # Initialize response_time
-        
-        for row in cursor.fetchall():
-            hour_value = row[0]  # The hour (should be an INTEGER)
-            logging.info(f"This is value for hour: {hour_value}")
-            response_time_value = row[1]  # The response_time
-            logging.info(f"This is value for response_time_value: {response_time_value}")
             
         for row in cursor.fetchall():
             hour_value, response_time_str = row  # Fetch hour and response_time as string
