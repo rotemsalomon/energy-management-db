@@ -246,9 +246,12 @@ def calculate_daily_consumption_by_asset(db_file):
 
 def process_metrics_for_hour(conn, cursor, current_hour, current_date):
     try:
-        current_date_str = current_date.strftime('%Y-%m-%d')  # Example of getting current date as string
-        end_of_day = current_date_str + timedelta(days=1)
+        # Convert current_date_str to a datetime object
+        current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
+        # Calculate end_of_day
+        end_of_day = current_date_obj + timedelta(days=1)
         end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        
         # get all records from tasmota_energy_data from the beginning and end of the day
         # (essentially until now)
         query = """
@@ -257,7 +260,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         WHERE response_time >= ? AND response_time < ?
         ORDER BY response_time
         """
-        cursor.execute(query, (current_date_str, end_of_day_str))
+        cursor.execute(query, (current_date, end_of_day_str))
         results = cursor.fetchall()
 
         if not results:
