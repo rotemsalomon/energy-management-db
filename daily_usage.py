@@ -201,6 +201,7 @@ def get_missing_hours(cursor):
 
         # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
+        logging.info(f"{recorded_hours}")
         logging.info(f"{missing_hours}")
         
         return missing_hours, response_time, current_date  # Return missing hours, last response_time, and current_date
