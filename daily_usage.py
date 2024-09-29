@@ -394,6 +394,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
+            logging.info(f"Current time in string format: {current_time_str}")
             hour = f"{current_hour:02d}:00"
             yesterday_date = (response_time - timedelta(days=1)).strftime('%Y-%m-%d')
         
