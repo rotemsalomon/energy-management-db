@@ -157,6 +157,43 @@ def compare_with_benchmark(cursor, asset_id, current_data):
             'total_kwh_charge_reduction': total_kwh_charge_reduction,
             'total_kwh_co2e_reduction': total_kwh_co2e_reduction
         }
+def get_missing_hours(db_file):
+    """
+    This function looks up the daily_usage table for the current day and returns a list of missing hours.
+    
+    :param db_file: Path to the SQLite database file.
+    :return: List of missing hours (0-23) for the current day.
+    """
+    # Get current date in 'YYYY-MM-DD' format
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # List of all hours in a day (0-23)
+    all_hours = set(range(24))
+    
+    # Connect to the SQLite database
+    conn = sqlite3.connect(db_file)
+    cursor = conn.cursor()
+    
+    # Query to get hours for the current day from the daily_usage table
+    query = """
+    SELECT strftime('%H', update_time) as hour
+    FROM daily_usage
+    WHERE date(update_time) = ?
+    """
+    
+    cursor.execute(query, (current_date,))
+    
+    # Fetch the results and convert them to a set of integers (hours)
+    recorded_hours = {int(row[0]) for row in cursor.fetchall()}
+    
+    # Calculate the missing hours by finding the difference between all_hours and recorded_hours
+    missing_hours = sorted(all_hours - recorded_hours)
+    logging.info(f"Missing hours for today: {missing_hours}")
+    
+    # Close the database connection
+    conn.close()
+    
+    return missing_hours
 
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
@@ -196,15 +233,14 @@ def calculate_daily_consumption_by_asset(db_file):
         daily_total_kwh = 0.0
         
         for row in results:
+            # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
+            # Convert timestamp in the format '%Y-%m-%d %H:%M:%S' (e.g., '2024-09-29 10:15:00')
+            # to datetime format (%Y-%m-%d %H:%M:%S) eg. 2024-09-29-10-15-00 
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
-            # response_time_time = response_time.time() //not used and can be deleted
-            # Calculate the day of the week (0 = Monday, 6 = Sunday)
+            # Make response time as string again and extract day of the week.
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
 
-            # Assume 4 measurements per minute, and calculate kWh per measurement
-            interval_seconds = 60 / 4
-            kwh = (power / 1000) * (interval_seconds / 3600)
             # Check is asset_id existing in our result array. If not, this means it is
             # the 1st time we are processing the data for this asset_id in the day.
             if asset_id not in asset_data:
@@ -221,31 +257,32 @@ def calculate_daily_consumption_by_asset(db_file):
                 }
                 logging.warning(f"Initializing data for asset_id: {asset_id}")
                 
-                # store current power for the asset_id which is compared against future reading
-                # to see if the compressor has turned on or off.
-                previous_power[asset_id] = power
-                # Time set to None indicating that it is currently off or hasn't been started yet.
-                compressor_start_times[asset_id] = None
-                # initialise kwh charges to start from 0.
-                total_kwh_charges[asset_id] = 0.0
+                # Set initial values to calculate compressor state:
+                previous_power[asset_id] = power # first power reading is to also equal previous_power
+                compressor_start_times[asset_id] = None # Record compressor state as off
+                total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
 
-            # Cumulative kWh for this asset. Add kwh (above) to the current asset_id total_kwh value.
-            asset_data[asset_id]['total_kwh'] += kwh
-            # Cumulative kwh for all assets. Add kwh (above) to the current asset_id daily_total_kwh value.
-            daily_total_kwh += kwh
+            # Assume 4 measurements per minute, and calculate kWh per measurement
+            interval_seconds = 60 / 4
+            kwh = (power / 1000) * (interval_seconds / 3600)
 
-            # Get the current hour from the response time
+            # Cumulative kWh usage for this asset.
+            asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
+            # Cumulative kwh for all assets.
+            daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
+
+            # Get the current hour from the datetime formatted response time in the record
             current_hour = response_time.hour
 
             # Reset current_hour_kwh for the asset if a new hour starts
-            if asset_data[asset_id]['last_processed_hour'] != current_hour:
+            if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
                 #logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
-                asset_data[asset_id]['current_hour_kwh'] = 0.0
-                asset_data[asset_id]['last_processed_hour'] = current_hour
+                asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
+                asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
 
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
-                asset_data[asset_id]['current_hour_kwh'] += kwh
+                asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
             # Detect compressor ON transition
@@ -273,7 +310,7 @@ def calculate_daily_consumption_by_asset(db_file):
             kwh_charge = kwh * rate
             total_kwh_charges[asset_id] += kwh_charge
 
-            # Compute daily total kWh charge
+            # Compute daily total kWh charge for all assets
             daily_total_kwh_charge = daily_total_kwh * rate
 
         for asset_id, data in asset_data.items():
@@ -425,6 +462,7 @@ def calculate_daily_consumption_by_asset(db_file):
 def main():
     # Run the function directly for testing
     calculate_daily_consumption_by_asset(db_file)
+    get_missing_hours(db_file)
 
     # Schedule the task to run at the beginning of every hour
     schedule.every().hour.at(":00").do(calculate_daily_consumption_by_asset, db_file=db_file)
