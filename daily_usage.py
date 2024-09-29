@@ -209,8 +209,8 @@ def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
     cursor = conn.cursor()
     try:
-        current_date = datetime.now().strftime('%Y-%m-%d')
-        missing_hours, response_time, current_date = get_missing_hours(cursor)  # Get missing hours, response_time, and current_date
+        # Get missing hours and associated data
+        missing_hours, response_time, current_date = get_missing_hours(cursor)
 
         if missing_hours:
             for current_hour in missing_hours:
@@ -237,6 +237,9 @@ def calculate_daily_consumption_by_asset(db_file):
                 current_hour = None  # Or handle as appropriate
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
+    finally:
+        conn.commit()  # Ensure data is saved
+        conn.close()  # Always close the connection after the process
 
 def process_metrics_for_hour(conn, cursor, current_hour, current_date):
     try:
@@ -246,7 +249,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         WHERE hour = ?
         '''
         
-        cursor.execute(query, (current_hour,))
+        cursor.execute(query, (current_hour, current_date))
         results = cursor.fetchall()  # Fetch results for the current hour
         logging.info(f"Fetched {len(results)} records for processing")
 
@@ -482,8 +485,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
-    finally:
-        conn.close()
+    #finally:
+        #conn.close()
 
 def main():
     # Run the function directly for testing
