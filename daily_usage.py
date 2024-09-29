@@ -393,7 +393,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
             hour = f"{current_hour:02d}:00"
-            yesterday_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).isoformat()
+            yesterday_date = (current_date - timedelta(days=1)).strftime('%Y-%m-%d')
         
             # Fetch yesterday's kWh for the same hour
             cursor.execute('''
