@@ -440,7 +440,7 @@ def handle_missed_hours(cursor):
     logging.info(f"Last update time: {last_update_time}")
 
     missed_hours = get_missed_hours(last_update_time)
-    logging.info(f"Number of missed hours: {missed_hours}")
+    logging.info(f"Number of missed hours: {len(missed_hours)}")
 
     for hour in missed_hours:
         records = get_records_for_missed_hour(cursor, hour)
