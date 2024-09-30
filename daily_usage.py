@@ -331,11 +331,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             if last_date_hour_key != current_hour_key:
                 # New hour detected for the same date or a new day
-                logging.info(f"New hour detected for asset {asset_id}. Current hour is: {current_hour} for {current_date}. Resetting current_hour_kwh.")
+                logging.info(f"New hour detected for asset {asset_id}. Current hour is: {current_hour_str} for {current_date}. Resetting current_hour_kwh.")
                 # Reset for new hour
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
-                logging.info(f"Debugging: The current hour value is: {current_hour}")
+                logging.info(f"Debugging: The current hour value is: {current_hour_str}")
 
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
