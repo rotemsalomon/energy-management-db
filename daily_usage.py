@@ -447,7 +447,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 total_kwh_reduction = comparison_results['total_kwh_reduction']
                 total_kwh_charge_reduction = comparison_results['total_kwh_charge_reduction']
                 total_kwh_co2e_reduction = comparison_results['total_kwh_co2e_reduction']
-                logging.info(f"{total_kwh_reduction}, {total_kwh_charge_reduction},{total_kwh_co2e_reduction} ")
+                logging.info(f"Comparison results: {total_kwh_reduction}, {total_kwh_charge_reduction},{total_kwh_co2e_reduction} ")
             else:
                 total_kwh_reduction = total_kwh_charge_reduction = total_kwh_co2e_reduction = 0  # Default values if no comparison results
             
