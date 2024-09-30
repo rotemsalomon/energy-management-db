@@ -339,6 +339,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
                 logging.info(f"Debugging: The current hour value is: {current_hour}")
+                first_response_time_current_hour[asset_id] = response_time
 
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
