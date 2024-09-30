@@ -342,13 +342,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             if isinstance(current_date, str):
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
-            #logging.info(f"response_time.date(): {response_time.date()}, response_time.hour: {response_time.hour}")
-            #logging.info(f"current_date: {current_date}, current_hour: {current_hour}")
-
-
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
-                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
             # Detect compressor ON transition
             if previous_power[asset_id] < 100 and power >= 100:
