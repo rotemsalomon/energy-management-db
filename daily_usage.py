@@ -322,8 +322,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
             # Get the current hour from the datetime formatted response time in the record
-            #current_hour = response_time.hour
-            #current_date = response_time.date()
+            current_hour = response_time.hour
+            current_date = response_time.date()
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
