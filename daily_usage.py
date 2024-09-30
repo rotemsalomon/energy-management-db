@@ -286,9 +286,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
 
-        logging.info(f"Debugging: current_date is: {current_date}")
-        logging.info(f"Debugging: current_hour is: {current_hour}")
-
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
@@ -297,6 +294,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Make response time as string again and extract day of the week.
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
+
+            logging.info(f"Debugging: current_date is: {current_date}")
+            logging.info(f"Debugging: current_hour is: {current_hour}")
+            logging.info(f"Debugging: response_time is: {response_time}")
 
             # Check is asset_id existing in our result array. If not, this means it is
             # the 1st time we are processing the data for this asset_id in the day.
