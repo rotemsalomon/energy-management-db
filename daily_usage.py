@@ -340,6 +340,17 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
                 asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
+                
+            # Ensure response_time is a datetime object, and current_date is a date object
+            if isinstance(response_time, str):
+                response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
+            if isinstance(current_date, str):
+                current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
+
+            if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
+                asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage 
+                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+                asset_data[asset_id]['response_time_count'] += 1  # Count the records used for current_hour_kwh
 
                 # Log the first response time for this asset_id when resetting
                 if asset_id in first_response_time_current_hour:
@@ -354,17 +365,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time
                 last_response_time_current_hour[asset_id] = response_time
-                
-            # Ensure response_time is a datetime object, and current_date is a date object
-            if isinstance(response_time, str):
-                response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
-            if isinstance(current_date, str):
-                current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
-
-            if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
-                asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage 
-                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
-                asset_data[asset_id]['response_time_count'] += 1  # Count the records used for current_hour_kwh
 
             # Detect compressor ON transition
             if previous_power[asset_id] < 100 and power >= 100:
