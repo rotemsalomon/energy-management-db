@@ -215,12 +215,14 @@ def calculate_daily_consumption_by_asset(db_file):
         if missing_hours:
             for current_hour in missing_hours:
                 # Process metrics for current_hour
+                logging.info(f"Getting records for all assets for the day: {current_date}")
+                get_asset_records_for_day (cursor, current_date)
                 logging.info(f"Processing metrics for missing hour: {current_hour}")
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)  # Pass current_hour and current_date directly
 
             # After processing all missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if update_time is valid
-                current_hour = update_time.hour
+                current_hour = datetime.now().hour
                 # logging.info(f"Response time valid and is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
@@ -228,7 +230,7 @@ def calculate_daily_consumption_by_asset(db_file):
         else:
             # If no missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
-                current_hour = update_time.hour
+                current_hour = datetime.now().hour
                 hour = f"{current_hour:02d}:00"
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)
                 logging.info(f"No missing hours. Current hour is: {hour}")
@@ -241,7 +243,7 @@ def calculate_daily_consumption_by_asset(db_file):
         conn.commit()  # Ensure data is saved
         conn.close()  # Always close the connection after the process
 
-def process_metrics_for_hour(conn, cursor, current_hour, current_date):
+def get_asset_records_for_day (cursor, current_date):
     try:
         # Convert current_date_str to a datetime object
         current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
@@ -258,14 +260,21 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         ORDER BY response_time
         """
         cursor.execute(query, (current_date, end_of_day_str))
-        results = cursor.fetchall()
+        daily_asset_records = cursor.fetchall()
 
-        if not results:
+        if not daily_asset_records:
             logging.warning("No data found for the current day")
             return
 
-        logging.info(f"Fetched {len(results)} records for processing")
-       
+        logging.info(f"Fetched {len(daily_asset_records)} records for processing")
+
+        return daily_asset_records
+    
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+
+def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date):
+    try:
         asset_data = {}
         previous_power = {}
         compressor_start_times = {}
@@ -273,7 +282,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         total_kwh_charges = {}
         daily_total_kwh = 0.0
 
-        for row in results:
+        for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
             # Convert timestamp in the format '%Y-%m-%d %H:%M:%S' (e.g., '2024-09-29 10:15:00')
@@ -313,8 +322,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
             # Get the current hour from the datetime formatted response time in the record
-            current_hour = response_time.hour
-            current_date = response_time.date()
+            #current_hour = response_time.hour
+            #current_date = response_time.date()
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
