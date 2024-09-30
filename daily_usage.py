@@ -325,8 +325,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
 
             # If the response time matches the current hour, accumulate kWh for the current hour
-            # Convert current_date to date object to alllow it to be compared
-            current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
+            logging.info(f"response_time.date() = {response_time.date()}, response_time.hour = {response_time.hour}")
+            logging.info(f"current_date = {current_date}, current_hour = {current_hour}")
 
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
