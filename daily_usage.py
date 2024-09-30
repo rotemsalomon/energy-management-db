@@ -92,13 +92,13 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
             # Handle case where rate period spans midnight
             if response_time >= rate_start or response_time < rate_end:
                 applicable_rate = rate
-                logging.info(f"Debugging: Midnight case: The applicable rate is: {applicable_rate}")
+                logging.info(f"Debugging: For asset ID: {asset_id} - Midnight case: The applicable rate is: {applicable_rate}")
                 break
         else:
             # Normal case where rate period does not span midnight
             if rate_start <= response_time < rate_end:
                 applicable_rate = rate
-                logging.info(f"Debugging: Normal case: The applicable rate is: {applicable_rate}")
+                logging.info(f"Debugging: For asset ID: {asset_id} - Normal case: The applicable rate is: {applicable_rate}")
                 break
 
     if applicable_rate is None:
