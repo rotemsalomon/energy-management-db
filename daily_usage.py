@@ -232,6 +232,8 @@ def calculate_daily_consumption_by_asset(db_file):
             if update_time:  # Check if response_time is valid
                 current_hour = datetime.now().hour
                 hour = f"{current_hour:02d}:00"
+                logging.info(f"Getting records for all assets for the day: {current_date}")
+                daily_asset_records = get_asset_records_for_day (cursor, current_date)
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)
                 logging.info(f"No missing hours. Current hour is: {hour}")
             else:
