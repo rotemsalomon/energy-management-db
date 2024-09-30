@@ -358,7 +358,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             else:
                 # If still processing the same hour, update the last response time
                 last_response_time_current_hour[asset_id] = response_time
-                
+
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
@@ -401,7 +401,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         for asset_id in asset_data.keys():
             logging.info(f"Asset ID: {asset_id}, First Response Time: {first_response_time[asset_id]}, Last Response Time: {last_response_time[asset_id]}")
             if asset_id in first_response_time_current_hour:
-                logging.info(f"Final Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}")
+            logging.info(f"Final Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
             
         day_of_week = response_time.strftime('%A')
 
