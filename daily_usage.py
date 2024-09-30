@@ -211,7 +211,7 @@ def calculate_daily_consumption_by_asset(db_file):
     try:
         # Get missing hours and associated data
         missing_hours, update_time, current_date = get_missing_hours(cursor)
-        # logging.info(f"These are the missing hours: {missing_hours}")
+        #logging.info(f"These are the missing hours: {missing_hours}")
         #logging.info(f"This is the response time: {update_time}")
         #logging.info(f"This is the current date: {current_date}")
 
@@ -327,7 +327,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
-                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
             # Detect compressor ON transition
             if previous_power[asset_id] < 100 and power >= 100:
@@ -404,8 +404,10 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             ''', (asset_id, yesterday_date, hour))
             # set yesterday_record to be the 1st record in the same hour yesterday using fetchone() function.
             yesterday_record = cursor.fetchone()
+            logging.info(f"Yesterday's record: {yesterday_record}")
             # assign if value exists. Other value of 0.0 is assigned.
             yesterday_kwh = yesterday_record[0] if yesterday_record else 0.0
+            logging.info(f"Yesterday's kwh usage: {yesterday_kwh}")
             # Calculate percentage change_kwh. Again. total_kwh reflects that cummulative kwh usage
             # for an asset for the current day.
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
@@ -509,6 +511,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
         #conn.close()
 
 def main():
+
     # Run the function directly for testing
     calculate_daily_consumption_by_asset(db_file)
     #get_missing_hours(db_file)
