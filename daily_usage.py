@@ -379,7 +379,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 else:
                     asset_data[asset_id]['response_time_count'] += 1  # Count the records used for current_hour_kwh
                     logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
-                    first_response_time_current_hour[asset_id] = response_time
+                    last_response_time_current_hour[asset_id] = response_time
 
             # Cumulative kWh usage for this asset.
             asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
