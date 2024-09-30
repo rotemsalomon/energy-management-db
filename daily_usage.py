@@ -60,6 +60,7 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
         WHERE asset_id = ?
     ''', (asset_id,))
     premise_id = cursor.fetchone()[0]
+    logging.info(f"Premise id for {asset_id} is {premise_id}")
 
     # Get the supplier name and plan name from prem_info
     cursor.execute('''
@@ -69,6 +70,8 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
     ''', (premise_id,))
     prem_info = cursor.fetchone()
     supplier_name, supplier_plan_name = prem_info
+    logging.info(f"The supplier for {asset_id} is {supplier_name} and the plan is: {supplier_plan_name}")
+
 
     # Query to get the rate applicable for the given response_time
     query = """
@@ -78,6 +81,7 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
     """
     cursor.execute(query, (supplier_name, supplier_plan_name))
     rates = cursor.fetchall()
+    logging.info(f"rates = {rates}")
 
     applicable_rate = None
 
