@@ -337,7 +337,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"current_date = {current_date}, current_hour = {current_hour}")
 
             # Ensure response_time is a datetime object, and current_date is a date object
-             if isinstance(response_time, str):
+            if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
             if isinstance(current_date, str):
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
