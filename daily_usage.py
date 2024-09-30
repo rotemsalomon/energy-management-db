@@ -328,10 +328,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 last_response_time_current_hour[asset_id] = response_time
                 logging.info(f"Debugging: Initializing: The last_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
 
-            else:
-                # Update the last response time for this asset_id
-                last_response_time_current_hour[asset_id] = response_time
-
             # Detect if we are in a new hour
             last_date_hour_key = (asset_id, current_date, asset_data[asset_id]['last_processed_hour'])
             current_hour_key = (asset_id, current_date, current_hour)
@@ -378,11 +374,12 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
                 # Log the first response time for this asset_id when resetting
-                if asset_id in first_response_time_current_hour:
+                if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 else:
                     asset_data[asset_id]['response_time_count'] += 1  # Count the records used for current_hour_kwh
                     logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
+                    first_response_time_current_hour[asset_id] = response_time
 
             # Cumulative kWh usage for this asset.
             asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
