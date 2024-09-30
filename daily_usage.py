@@ -220,7 +220,7 @@ def calculate_daily_consumption_by_asset(db_file):
 
             # After processing all missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if update_time is valid
-                current_hour = datetime.now().hour
+                current_hour = update_time.hour
                 # logging.info(f"Response time valid and is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
@@ -228,7 +228,7 @@ def calculate_daily_consumption_by_asset(db_file):
         else:
             # If no missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
-                current_hour = datetime.now().hour
+                current_hour = update_time.hour
                 hour = f"{current_hour:02d}:00"
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)
                 logging.info(f"No missing hours. Current hour is: {hour}")
@@ -313,7 +313,7 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
             daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
             # Get the current hour from the datetime formatted response time in the record
-            # current_hour = response_time.hour
+            current_hour = response_time.hour
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
@@ -322,8 +322,8 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
 
             # If the response time matches the current hour, accumulate kWh for the current hour
-            logging.info(f"response_time.date() = {response_time.date()}, response_time.hour = {response_time.hour}")
-            logging.info(f"current_date = {current_date}, current_hour = {current_hour}")
+            #logging.info(f"response_time.date() = {response_time.date()}, response_time.hour = {response_time.hour}")
+            #logging.info(f"current_date = {current_date}, current_hour = {current_hour}")
 
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
