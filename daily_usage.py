@@ -283,6 +283,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         total_kwh_charges = {}
         daily_total_kwh = 0.0
 
+        first_response_time = {}
+        last_response_time = {}
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
@@ -313,6 +315,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 compressor_start_times[asset_id] = None # Record compressor state as off
                 total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
 
+             # Initialize the first and last response time for this asset_id
+                first_response_time[asset_id] = response_time
+                last_response_time[asset_id] = response_time
+            else:
+                # Update the last response time for this asset_id
+                last_response_time[asset_id] = response_time
+
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
             kwh = (power / 1000) * (interval_seconds / 3600)
@@ -322,19 +331,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Cumulative kwh for all assets.
             daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
-            # Get the current hour from the datetime formatted response time in the record
-            #current_hour = response_time.hour
-            #current_date = response_time.date()
-
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
                 logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
                 asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
-
-            # If the response time matches the current hour, accumulate kWh for the current hour
-            #logging.info(f"response_time.date() = {response_time.date()}, response_time.hour = {response_time.hour}")
-            #logging.info(f"current_date = {current_date}, current_hour = {current_hour}")
 
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
@@ -342,8 +343,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             if isinstance(current_date, str):
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
-            if response_time.date() == current_date and current_hour == response_time.hour:
-                asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
+            if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
+                asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage 
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
 
             # Detect compressor ON transition
@@ -373,6 +374,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Compute daily total kWh charge for all assets
             daily_total_kwh_charge = daily_total_kwh * rate
+        
+        for asset_id in asset_data.keys():
+            logging.info(f"Asset ID: {asset_id}, First Response Time: {first_response_time[asset_id]}, Last Response Time: {last_response_time[asset_id]}")
             
         day_of_week = response_time.strftime('%A')
 
