@@ -233,7 +233,7 @@ def calculate_daily_consumption_by_asset(db_file):
             if update_time:  # Check if response_time is valid
                 current_hour = update_time.hour
                 hour = f"{current_hour:02d}:00"
-
+                process_metrics_for_hour(conn, cursor, current_hour, current_date)
                 logging.info(f"No missing hours. Current hour is: {hour}")
             else:
                 logging.warning("No valid response_time found.")
