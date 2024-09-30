@@ -283,8 +283,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         total_kwh_charges = {}
         daily_total_kwh = 0.0
 
-        first_response_time = {}
-        last_response_time = {}
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
 
@@ -321,13 +319,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
 
              # Initialize the first and last response time for this asset_id
-                first_response_time[asset_id] = response_time
-                last_response_time[asset_id] = response_time
                 first_response_time_current_hour[asset_id] = response_time
                 last_response_time_current_hour[asset_id] = response_time
             else:
                 # Update the last response time for this asset_id
-                last_response_time[asset_id] = response_time
                 last_response_time_current_hour[asset_id] = response_time
 
 
@@ -359,7 +354,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time
                 last_response_time_current_hour[asset_id] = response_time
-                
+
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
@@ -400,7 +395,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             daily_total_kwh_charge = daily_total_kwh * rate
         
         for asset_id in asset_data.keys():
-            logging.info(f"Asset ID: {asset_id}, First Response Time: {first_response_time[asset_id]}, Last Response Time: {last_response_time[asset_id]}")
             if asset_id in first_response_time_current_hour:
                 logging.info(f"Final Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
             
