@@ -361,8 +361,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     #logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
                     last_response_time_current_hour[asset_id] = response_time
             
-            logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
-            
             # Cumulative kWh usage for this asset.
             asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
             # Cumulative kwh for all assets.
@@ -396,6 +394,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Compute daily total kWh charge for all assets
             daily_total_kwh_charge = daily_total_kwh * rate
         
+        logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
+
         for asset_id in asset_data.keys():
             if asset_id in first_response_time_current_hour:
                 logging.info(f"Final Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
