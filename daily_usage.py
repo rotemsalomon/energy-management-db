@@ -322,11 +322,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
 
              # Initialize the first and last response time for this asset_id
-                first_response_time_current_hour[asset_id] = {}
-                logging.info(f"Debugging: Initializing: The first_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
+                #first_response_time_current_hour[asset_id] = {}
+                #logging.info(f"Debugging: Initializing: The first_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
 
-                last_response_time_current_hour[asset_id] = {}
-                logging.info(f"Debugging: Initializing: The last_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
+                #last_response_time_current_hour[asset_id] = {}
+                #logging.info(f"Debugging: Initializing: The last_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
 
             # Detect if we are in a new hour
             last_date_hour_key = (asset_id, current_date, asset_data[asset_id]['last_processed_hour'])
