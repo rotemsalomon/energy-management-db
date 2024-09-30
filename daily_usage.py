@@ -286,8 +286,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
 
-        logging.info(f"Debugging: current_date is: {current_date}")
-        logging.info(f"Debugging: current_hour is: {current_hour}")
+        logging.info(f"Debugging: Processing records for: {current_date}")
+        logging.info(f"Debugging: Processing records for: {current_hour}")
 
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
@@ -321,11 +321,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 compressor_start_times[asset_id] = None # Record compressor state as off
                 total_kwh_charges[asset_id] = 0.0 # initialise kwh charges to start from 0.
 
-             # Initialize the first and last response time for this asset_id
-                #first_response_time_current_hour[asset_id] = response_time
-                #logging.info(f"Debugging: Initializing: The first_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
-
-                last_response_time_current_hour[asset_id] = response_time
+                #last_response_time_current_hour[asset_id] = response_time
                 #logging.info(f"Debugging: Initializing: The last_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
 
             # Detect if we are in a new hour
@@ -343,26 +339,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
             kwh = (power / 1000) * (interval_seconds / 3600)
-
-            # Reset current_hour_kwh for the asset if a new hour starts
-            #if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
-                #logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
-                #asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
-                #asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
-
-                # Log the first response time for this asset_id when resetting
-                #if asset_id in first_response_time_current_hour:
-                    #logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour.get(asset_id, 'N/A')}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
-
-                # Reset the first response time for the new hour
-                #first_response_time_current_hour[asset_id] = response_time
-                # Reset the response time count for the new hour
-                #asset_data[asset_id]['response_time_count'] = 0
-            #else:
-                # If still processing the same hour, check and update the first response time if needed
-                #if asset_id not in first_response_time_current_hour:
-                    #first_response_time_current_hour[asset_id] = response_time
-                #last_response_time_current_hour[asset_id] = response_time
             
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
