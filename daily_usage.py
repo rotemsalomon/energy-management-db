@@ -288,7 +288,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         logging.info(f"Debugging: current_date is: {current_date}")
         logging.info(f"Debugging: current_hour is: {current_hour}")
-        
+
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
             asset_id, asset_name, power, response_time_str = row
@@ -339,7 +339,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 logging.info(f"New hour detected for asset {asset_id}. Resetting current_hour_kwh.")
 
                 # Log the first response time for this asset_id when resetting
-                if asset_id in first_response_time_current_hour:
+                if asset_id not in first_response_time_current_hour:
                     logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
 
                 # Reset for new hour
