@@ -346,19 +346,20 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
 
-                # Log the first and last response time for this asset_id when resetting
+                # Log the first response time for this asset_id when resetting
                 if asset_id in first_response_time_current_hour:
-                    logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}")
+                    logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour.get(asset_id, 'N/A')}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
 
-                # Reset first and last response times for the new hour
+                # Reset the first response time for the new hour
                 first_response_time_current_hour[asset_id] = response_time
-                last_response_time_current_hour[asset_id] = response_time
                 # Reset the response time count for the new hour
                 asset_data[asset_id]['response_time_count'] = 0
             else:
-                # If still processing the same hour, update the last response time
+                # If still processing the same hour, check and update the first response time if needed
+                if asset_id not in first_response_time_current_hour:
+                    first_response_time_current_hour[asset_id] = response_time
                 last_response_time_current_hour[asset_id] = response_time
-
+                
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
