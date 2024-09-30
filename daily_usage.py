@@ -320,10 +320,10 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
-                #logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
+                logging.info(f"Resetting current_hour_kwh for asset {asset_id} for new hour {current_hour}")
                 asset_data[asset_id]['current_hour_kwh'] = 0.0 # Reset current hour kwh usage to 0.
                 asset_data[asset_id]['last_processed_hour'] = current_hour # update the value of last_processed_hour to = current_hour so when the next record is processed, it will be considered in the current_hour.
-
+            logging.info(f"The date for {asset_data[asset_id]} is {response_time.date()} and hour is {response_time.hour} ")
             # If the response time matches the current hour, accumulate kWh for the current hour
             if response_time.date() == current_date and current_hour == response_time.hour:
                 asset_data[asset_id]['current_hour_kwh'] += kwh # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value, add kwh to usage 
@@ -383,14 +383,6 @@ def process_metrics_for_hour(conn, cursor, current_hour, current_date):
 
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
-            # Get the formatted hour for the current record
-            # Set minutes and seconds to zero to get the beginning of the hour
-            #response_time_start_of_hour = response_time.replace(minute=0, second=0, microsecond=0)
-
-            # Format the hour as HH:00 for the beginning of the hour
-            #hour = response_time_start_of_hour.strftime('%H:%M')  # This will now always be 'HH:00'
-            #current_hour = response_time_start_of_hour.hour  # Get the current hour as an integer
-            #logging.info(f"current_hour = {current_hour}")
             
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
