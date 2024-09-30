@@ -379,7 +379,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
                 asset_data[asset_id]['response_time_count'] += 1  # Count the records used for current_hour_kwh
                 # Log the first response time for this asset_id when resetting
-                if asset_id not in first_response_time_current_hour:
+                if asset_id in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                     asset_data[asset_id]['response_time_count'] = 1  # Start counting for the new hour
                     logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
