@@ -287,7 +287,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         last_response_time_current_hour = {}
 
         logging.info(f"Debugging: Processing records for: {current_date}")
-        logging.info(f"Debugging: Processing records for: {current_hour}")
+        current_hour_str = f"{current_hour:02d}:00"
+        logging.info(f"Debugging: Processing records for: {current_hour_str}")
 
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
