@@ -172,12 +172,12 @@ def get_missing_hours(cursor):
         '''
         
         cursor.execute(query, (current_date,))
-        update_time = None  # Initialize response_time
+        update_time = None  # Initialize update_time
 
         recorded_hours = set()
             
         for row in cursor.fetchall():
-            hour_value, update_time_str = row  # Fetch hour and response_time as string
+            hour_value, update_time_str = row  # Fetch hour and update_time as string
 
             try:
                 # Convert response_time_str to a datetime object
@@ -198,7 +198,7 @@ def get_missing_hours(cursor):
         logging.info(f"These are recorded hours: {recorded_hours}")
         logging.info(f"These are missing hours: {missing_hours}")
         
-        return missing_hours, update_time, current_date  # Return missing hours, last response_time, and current_date
+        return missing_hours, update_time, current_date  # Return missing hours, last update_time, and current_date
     
     except Exception as e:
         logging.error(f"An error occurred: {e}")
@@ -211,9 +211,6 @@ def calculate_daily_consumption_by_asset(db_file):
     try:
         # Get missing hours and associated data
         missing_hours, update_time, current_date = get_missing_hours(cursor)
-        #logging.info(f"These are the missing hours: {missing_hours}")
-        #logging.info(f"This is the response time: {update_time}")
-        #logging.info(f"This is the current date: {current_date}")
 
         if missing_hours:
             for current_hour in missing_hours:
@@ -222,8 +219,8 @@ def calculate_daily_consumption_by_asset(db_file):
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)  # Pass current_hour and current_date directly
 
             # After processing all missing hours, set current_hour to the hour from response_time
-            if update_time:  # Check if response_time is valid
-                current_hour = update_time.hour
+            if update_time:  # Check if update_time is valid
+                current_hour = datetime.now().hour
                 # logging.info(f"Response time valid and is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
@@ -231,7 +228,7 @@ def calculate_daily_consumption_by_asset(db_file):
         else:
             # If no missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
-                current_hour = update_time.hour
+                current_hour = datetime.now().hour
                 hour = f"{current_hour:02d}:00"
                 process_metrics_for_hour(conn, cursor, current_hour, current_date)
                 logging.info(f"No missing hours. Current hour is: {hour}")
