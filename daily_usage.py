@@ -342,8 +342,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             if isinstance(current_date, str):
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
-            logging.info(f"response_time.date(): {response_time.date()}, response_time.hour: {response_time.hour}")
-            logging.info(f"current_date: {current_date}, current_hour: {current_hour}")
+            #logging.info(f"response_time.date(): {response_time.date()}, response_time.hour: {response_time.hour}")
+            #logging.info(f"current_date: {current_date}, current_hour: {current_hour}")
 
 
             if response_time.date() == current_date and current_hour == response_time.hour:
@@ -407,7 +407,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             
             # Define current_time_str for logging or other purposes
             current_time_str = response_time.strftime('%Y-%m-%d %H:%M:%S')
-            logging.info(f"Current time in string format: {current_time_str}")
+            #logging.info(f"Current time in string format: {current_time_str}")
             hour = f"{current_hour:02d}:00"
             yesterday_date = (response_time - timedelta(days=1)).strftime('%Y-%m-%d')
         
