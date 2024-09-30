@@ -349,8 +349,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
-                #logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
-                # Log the first response time for this asset_id when resetting
+                logging.info(f"Current hour kWh for {asset_id}: {asset_data[asset_id]['current_hour_kwh']}")
                 if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 else:
