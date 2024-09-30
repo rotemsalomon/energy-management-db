@@ -220,10 +220,10 @@ def calculate_daily_consumption_by_asset(db_file):
                 logging.info(f"Processing metrics for missing hour: {current_hour}")
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)  # Pass current_hour and current_date directly
 
-            # After processing all missing hours, set current_hour to the hour from response_time
+            # After processing all missing hours, set current_hour to the hour from current time.
+            # Not sure this is required. Maybe for some corner case??
             if update_time:  # Check if update_time is valid
                 current_hour = datetime.now().hour
-                # logging.info(f"Response time valid and is: {current_hour}")
             else:
                 logging.warning("No valid response_time found.")
 
@@ -249,9 +249,8 @@ def get_asset_records_for_day (cursor, current_date):
     try:
         # Convert current_date_str to a datetime object
         current_date_obj = datetime.strptime(current_date, '%Y-%m-%d')
-        # Calculate end_of_day
-        end_of_day = current_date_obj + timedelta(days=1)
-        end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S')
+        end_of_day = current_date_obj + timedelta(days=1) # Calculate end_of_day as datetime object
+        end_of_day_str = end_of_day.strftime('%Y-%m-%d %H:%M:%S') # Convert to string
         
         # get all records from tasmota_energy_data from the beginning and end of the day
         # (essentially until now)
@@ -324,8 +323,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
             # Get the current hour from the datetime formatted response time in the record
-            current_hour = response_time.hour
-            current_date = response_time.date()
+            #current_hour = response_time.hour
+            #current_date = response_time.date()
 
             # Reset current_hour_kwh for the asset if a new hour starts
             if asset_data[asset_id]['last_processed_hour'] != current_hour: # If the last_processed_hour value does not = the hour value records are not being processed for.
