@@ -423,7 +423,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 SELECT total_kwh, daily_total_kwh FROM daily_usage 
                 WHERE asset_id = ? AND date = ? AND hour < ? 
                 ORDER BY hour DESC LIMIT 1
-            ''', (asset_id, current_date, current_hour))
+            ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
 
