@@ -199,10 +199,17 @@ def get_missing_hours(cursor):
             except ValueError as e:
                 logging.error(f"Invalid hour format in the database: {hour_value}")
 
+        # Remove the last hour, so the script re-runs the calculations for the last hour
+        # Handle the case, where script was run mid-hour manually or not all records where used.
+        recorded_hours.discard(current_hour - 1)
+
         # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
         logging.info(f"These are recorded hours: {recorded_hours}")
-        logging.info(f"These are missing hours: {missing_hours}")
+        if not missing_hours:
+            logging.info("There are no missing hours.")
+        else:
+            logging.info(f"These are missing hours: {missing_hours}")
         
         return missing_hours, update_time, current_date  # Return missing hours, last update_time, and current_date
     
