@@ -347,10 +347,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 # Reset for new hour
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
-                logging.info(f"Debugging: Resetting for new hour. The current hour value is: {current_hour_str}")
+                logging.info(f"Debugging: Date/ResponseTime != Current_date/time for Asset ID: {asset_id}. Resetting for new hour. The current hour value is: {current_hour_str}")
 
                 # Set the first response time for the new hour
-                first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 asset_data[asset_id]['response_time_count'] = 1  # Initialize count for the new hour
                 logging.info(f"Debugging: First response time set for asset {asset_id} at {response_time}. Reset response_time_count to 1.")
             else:
@@ -367,7 +366,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
                 logging.info(f"Date/ResponseTime = Current_date/time for Asset ID: {asset_id}")
                 
-                # Now update the last response time for the current hour
+                # Now record first and the last response time for the current hour
+                if asset_id not in first_response_time_current_hour:
+                    first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 last_response_time_current_hour[asset_id] = response_time
                 logging.info(f"Asset ID: {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
             
