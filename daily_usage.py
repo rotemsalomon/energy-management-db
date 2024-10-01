@@ -447,21 +447,23 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Log or store the total_kwh and daily_total_kwh as needed
             #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}, Daily Total kWh = {asset_data[asset_id]['daily_total_kwh']}")
 
+            logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
+            logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
             # Detect compressor ON transition
             if previous_power[asset_id] < 100 and power >= 100:
                 asset_data[asset_id]['cnt_comp_on'] += 1
                 compressor_start_times[asset_id] = response_time  # Record compressor start time
-                #logging.info(f"Compressor ON for asset {asset_id} at {response_time}")
+                logging.info(f"Compressor ON for asset {asset_id} at {response_time}")
 
             # Detect compressor OFF transition
             elif previous_power[asset_id] >= 100 and power < 100:
                 asset_data[asset_id]['cnt_comp_off'] += 1
-                #logging.info(f"Compressor OFF for asset {asset_id} at {response_time}")
+                logging.info(f"Compressor OFF for asset {asset_id} at {response_time}")
                 if compressor_start_times[asset_id]:
                     comp_runtime = (response_time - compressor_start_times[asset_id]).total_seconds() / 60.0
                     asset_data[asset_id]['total_comp_runtime'] += comp_runtime
                     asset_data[asset_id]['compressor_runtimes'].append(comp_runtime)
-                    #logging.info(f"Compressor runtime for asset {asset_id}: {comp_runtime} minutes")
+                    logging.info(f"Compressor runtime for asset {asset_id}: {comp_runtime} minutes")
                     compressor_start_times[asset_id] = None  # Reset start time after calculating runtime
 
             # Update previous power state to current for the next iteration
