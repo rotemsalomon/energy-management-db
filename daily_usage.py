@@ -328,7 +328,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     'last_processed_hour': -1,  # Track the last processed hour
                     'compressor_runtimes': [],
                     'response_time_count': 0,  # Initialize the count of response times
-
+                    'daily_total_kwh': 0,  # daily_total_kwh starts at 0 for new day
+                    'last_date': current_date,  # Track the last date this asset was updated
+                    'last_hour': None  # Track the last hour this asset was updated
                 }
                 logging.warning(f"Initializing data for asset_id: {asset_id}")
                 
@@ -379,12 +381,42 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 last_response_time_current_hour[asset_id] = response_time
-                #logging.info(f"Debugging: Date/ResponseTime = Current_date/time for asset {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")
-            
+                #logging.info(f"Debugging: Date/ResponseTime = Current_date/time for asset {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")            
+
             # Cumulative kWh usage for this asset.
-            asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
+            #asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
             # Cumulative kwh for all assets.
-            daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
+            #daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
+
+            # Cummulate total_kwh and daily_total_kwh per asset for current_time per hour.
+            # Check if the date has changed (new day)
+            if asset_data[asset_id]['last_date'] != current_date:
+                # Reset total_kwh and daily_total_kwh for a new day
+                asset_data[asset_id]['total_kwh'] = 0
+                asset_data[asset_id]['daily_total_kwh'] = 0
+                asset_data[asset_id]['last_date'] = current_date  # Update to new date
+                asset_data[asset_id]['last_hour'] = None  # Reset hour tracking for new day
+
+            # Get the last hour this asset was updated
+            last_hour = asset_data[asset_id]['last_hour']
+
+            if last_hour is None:  # First hour of the day
+                # Set total_kwh to the current hour's kWh value (first hour of the day)
+                asset_data[asset_id]['total_kwh'] = kwh
+                # Set daily_total_kwh to the current hour's kWh value (first hour of the day)
+                asset_data[asset_id]['daily_total_kwh'] = kwh
+            else:
+                # For subsequent hours, add the current hour's kWh to the total_kwh from the previous hour
+                asset_data[asset_id]['total_kwh'] += kwh
+
+                # For subsequent hours, add the current hour's kWh to the daily_total_kwh
+                asset_data[asset_id]['daily_total_kwh'] += kwh
+
+            # Update the last hour this asset was updated to the current hour
+            asset_data[asset_id]['last_hour'] = current_hour
+
+            # Log or store the total_kwh and daily_total_kwh as needed
+            logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}, Daily Total kWh = {asset_data[asset_id]['daily_total_kwh']}")
 
             # Detect compressor ON transition
             if previous_power[asset_id] < 100 and power >= 100:
