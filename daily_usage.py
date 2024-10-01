@@ -167,8 +167,9 @@ def get_missing_hours(cursor):
         # Get current date in 'YYYY-MM-DD' format
         current_date = datetime.now().strftime('%Y-%m-%d')
         current_hour = datetime.now().hour
-        valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
-        
+        #valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
+        valid_hours = set(range(current_hour))  # List of hours from 00:00 to the previous hour
+
         # Query to get hours for the current day from the daily_usage table
         query = '''
         SELECT hour, update_time
@@ -228,9 +229,7 @@ def calculate_daily_consumption_by_asset(db_file):
             # After processing all missing hours, set current_hour to the hour from current time.
             # Not sure this is required. Maybe for some corner case??
             if update_time:  # Check if update_time is valid
-                last_hour_time = datetime.now() - timedelta(hours=1)
-                current_hour = last_hour_time.hour
-                #current_hour_key = f"{last_hour_time.date()}-{current_hour}"  # Create a unique key for the last hour
+                current_hour = datetime.now().hour
             else:
                 logging.warning("No valid response_time found.")
         '''
