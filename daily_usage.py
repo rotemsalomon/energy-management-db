@@ -238,7 +238,6 @@ def calculate_daily_consumption_by_asset(db_file):
             # If no missing hours where discovered (ie The above if statememnt was not invoked), 
             # Set current_hour to update_time
             if update_time:  # Check if response_time is valid
-                logging.info(f"Debugging: No hours missing. Process last hour")
                 current_hour = update_time
                 logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
 
