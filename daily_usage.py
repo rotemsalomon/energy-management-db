@@ -338,8 +338,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Detect if we are in a new hour
             last_date_hour_key = (asset_id, current_date, asset_data[asset_id]['last_processed_hour'])
             current_hour_key = (asset_id, current_date, current_hour)
-            logging.info(f"Last Date Hour Key: {last_date_hour_key}")
-            logging.info(f"Current Hour Key: {current_hour_key}")
+            #logging.info(f"Last Date Hour Key: {last_date_hour_key}")
+            #logging.info(f"Current Hour Key: {current_hour_key}")
 
             if last_date_hour_key != current_hour_key:
                 # New hour detected for the same date or a new day
