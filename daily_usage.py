@@ -231,7 +231,8 @@ def calculate_daily_consumption_by_asset(db_file):
                 # Process metrics for current_hour
                 logging.info(f"Getting records for all assets for the day: {current_date}")
                 daily_asset_records = get_asset_records_for_day (cursor, current_date)
-                logging.info(f"Processing metrics for missing hour: {current_hour}")
+                formatted_hour = f"{str(current_hour).zfill(2)}:00"
+                logging.info(f"Processing metrics for missing hour: {formatted_hour}")
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)  # Pass current_hour and current_date directly
 
             # When done processing missing hours, set current_hour to update_time.
