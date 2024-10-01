@@ -391,7 +391,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Cummulate total_kwh and daily_total_kwh per asset for current_time per hour.
             # Check if the date has changed (new day)
             if asset_data[asset_id]['last_date'] != current_date:
-                logging.info(f"last date != current_date")
+                #logging.info(f"last date != current_date")
                 # Reset total_kwh and daily_total_kwh for a new day
                 asset_data[asset_id]['total_kwh'] = 0
                 asset_data[asset_id]['daily_total_kwh'] = 0
@@ -400,24 +400,24 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Get the last hour this asset was updated
             last_hour = asset_data[asset_id]['last_hour']
-            logging.info(f"{last_hour}")
+            #logging.info(f"{last_hour}")
 
 
             if last_hour is None:  # First hour of the day
                 # Set total_kwh to the current hour's kWh value (first hour of the day)
-                logging.info(f"last hour = None")
+                #logging.info(f"last hour = None")
                 asset_data[asset_id]['total_kwh'] = kwh
                 # Set daily_total_kwh to the current hour's kWh value (first hour of the day)
                 asset_data[asset_id]['daily_total_kwh'] = kwh
             else:
-                logging.info(f"last hour != None")
+                #logging.info(f"last hour != None")
                 # For subsequent hours, add the current hour's kWh to the total_kwh from the previous hour
                 asset_data[asset_id]['total_kwh'] += kwh
-                logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
+                #logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
 
                 # For subsequent hours, add the current hour's kWh to the daily_total_kwh
                 asset_data[asset_id]['daily_total_kwh'] += kwh
-                logging.info(f"Debugging: For asset ID: {asset_id} - Daily total kWh: {asset_data[asset_id]['daily_total_kwh']}")
+                #logging.info(f"Debugging: For asset ID: {asset_id} - Daily total kWh: {asset_data[asset_id]['daily_total_kwh']}")
 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
