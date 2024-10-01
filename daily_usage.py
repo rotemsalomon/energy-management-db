@@ -421,8 +421,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Fetch the last saved total_kwh and daily_total_kwh for the asset for the same day
             cursor.execute('''
                 SELECT total_kwh, daily_total_kwh FROM daily_usage 
-                WHERE asset_id = ? AND date = ? ORDER BY hour DESC LIMIT 1
-            ''', (asset_id, current_date))
+                WHERE asset_id = ? AND date = ? AND hour = ? ORDER BY hour DESC LIMIT 1
+            ''', (asset_id, current_date, current_hour))
             previous_kwh_record = cursor.fetchone()
 
             # Initialize total_kwh and daily_total_kwh based on previous records or start fresh if no record exists
