@@ -400,6 +400,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Get the last hour this asset was updated
             last_hour = asset_data[asset_id]['last_hour']
+            last_hour_str = f"{last_hour:02d}:00"
             #logging.info(f"{last_hour}")
 
             if last_hour is None:  # First hour of the day
