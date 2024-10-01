@@ -228,10 +228,12 @@ def calculate_daily_consumption_by_asset(db_file):
             # After processing all missing hours, set current_hour to the hour from current time.
             # Not sure this is required. Maybe for some corner case??
             if update_time:  # Check if update_time is valid
-                current_hour = datetime.now().hour
+                last_hour_time = datetime.now() - timedelta(hours=1)
+                current_hour = last_hour_time.hour
+                #current_hour_key = f"{last_hour_time.date()}-{current_hour}"  # Create a unique key for the last hour
             else:
                 logging.warning("No valid response_time found.")
-
+        '''
         else:
             # If no missing hours, set current_hour to the hour from response_time
             if update_time:  # Check if response_time is valid
@@ -244,9 +246,11 @@ def calculate_daily_consumption_by_asset(db_file):
                 daily_asset_records = get_asset_records_for_day (cursor, current_date)
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)
                 logging.info(f"No missing hours. Processing records for: {hour}")
+
             else:
                 logging.warning("No valid response_time found.")
                 current_hour = None  # Or handle as appropriate
+            '''
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
     finally:
