@@ -436,7 +436,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Accumulate the current hour kWh to total_kwh and daily_total_kwh
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh']
             daily_total_kwh = previous_daily_total_kwh + asset_data[asset_id]['current_hour_kwh']
-            logging.info(f"The previous: {previous_daily_total_kwh}. The current hour kwh: {asset_data[asset_id]['current_hour_kwh']}. The new daily total: {daily_total_kwh}")
  
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
@@ -560,7 +559,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
-            logging.info(f"The daily_total_kwh for {asset_id} for {current_hour} is {daily_total_kwh}")
+            logging.info(f"The daily_total_kwh as of {current_hour} is {daily_total_kwh}")
+            logging.info(f"The previous: {previous_daily_total_kwh}. The current hour kwh: {asset_data[asset_id]['current_hour_kwh']}. The new daily total: {daily_total_kwh}")
 
             # Insert or update the record in daily_usage
             cursor.execute('''
