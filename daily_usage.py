@@ -563,7 +563,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
             logging.info(f"The daily_total_kwh as of {current_hour} is {daily_total_kwh}")
-            logging.info(f"The previous: {previous_daily_total_kwh}. The current hour kwh: {asset_data[asset_id]['current_hour_kwh']}. The new daily total: {daily_total_kwh}")
+            logging.info(f"The daily_total_kwh as of previous hour: {previous_daily_total_kwh}")
 
             # Insert or update the record in daily_usage
             cursor.execute('''
