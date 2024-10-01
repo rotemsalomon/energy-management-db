@@ -354,11 +354,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 # Reset for new hour
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
-                logging.info(f"Debugging: Date/ResponseTime != Current_date/time for Asset ID: {asset_id}. Resetting for new hour. The current hour value is: {current_hour_str}")
+                #logging.info(f"Debugging: Date/ResponseTime != Current_date/time for Asset ID: {asset_id}. Resetting for new hour. The current hour value is: {current_hour_str}")
 
                 # Set the first response time for the new hour
                 asset_data[asset_id]['response_time_count'] = 1  # Initialize count for the new hour
-                logging.info(f"Debugging: First response time set for asset {asset_id} at {response_time}. Reset response_time_count to 1.")
+                #logging.info(f"Debugging: First response time set for asset {asset_id} at {response_time}. Reset response_time_count to 1.")
             else:
                 # Still in the same hour, increment response time count
                 asset_data[asset_id]['response_time_count'] += 1           
