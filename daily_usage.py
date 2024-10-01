@@ -402,7 +402,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             last_hour = asset_data[asset_id]['last_hour']
             #logging.info(f"{last_hour}")
 
-
             if last_hour is None:  # First hour of the day
                 # Set total_kwh to the current hour's kWh value (first hour of the day)
                 #logging.info(f"last hour = None")
@@ -421,6 +420,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
+            logging.info(f"The last hour = current hour: {current_hour}")
 
             # Log or store the total_kwh and daily_total_kwh as needed
             #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}, Daily Total kWh = {asset_data[asset_id]['daily_total_kwh']}")
