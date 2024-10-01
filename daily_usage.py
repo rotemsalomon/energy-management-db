@@ -201,11 +201,7 @@ def get_missing_hours(cursor):
 
         # Remove the last hour, so the script re-runs the calculations for the last hour
         # Handle the case, where script was run mid-hour manually or not all records where used.
-        # Remove the last hour from recorded_hours
-        last_hour_to_remove = current_hour - 1 if current_hour > 0 else 23  # Handle midnight case
-        logging.info(f"Trying to remove the last hour: {last_hour_to_remove}")
-
-        recorded_hours.discard(last_hour_to_remove)  # Discard the last hour to ensure recalculation
+        #recorded_hours.discard(current_hour - 1)
         
         # Calculate the missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
