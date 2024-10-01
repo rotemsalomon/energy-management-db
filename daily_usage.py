@@ -400,7 +400,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Get the last hour this asset was updated
             last_hour = asset_data[asset_id]['last_hour']
-            last_hour_str = asset_data[asset_id]['last_hour'].strftime('%H:%M')
             #logging.info(f"{last_hour}")
 
             if last_hour is None:  # First hour of the day
@@ -423,7 +422,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             cursor.execute('''
                 SELECT total_kwh, daily_total_kwh FROM daily_usage 
                 WHERE asset_id = ? AND date = ? AND hour = ? ORDER BY hour DESC LIMIT 1
-            ''', (asset_id, current_date, last_hour_str))
+            ''', (asset_id, current_date))
+
             previous_kwh_record = cursor.fetchone()
             logging.info(f"The last saved record: {previous_kwh_record}")
 
