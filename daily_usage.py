@@ -413,15 +413,16 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 logging.info(f"last hour != None")
                 # For subsequent hours, add the current hour's kWh to the total_kwh from the previous hour
                 asset_data[asset_id]['total_kwh'] += kwh
-                logging.info(f"Debugging: For asset ID: {asset_id} - {asset_data[asset_id]['total_kwh']}")
+                logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
 
                 # For subsequent hours, add the current hour's kWh to the daily_total_kwh
                 asset_data[asset_id]['daily_total_kwh'] += kwh
-                logging.info(f"Debugging: For asset ID: {asset_id} - {asset_data[asset_id]['daily_total_kwh']}")
+                logging.info(f"Debugging: For asset ID: {asset_id} - Daily total kWh: {asset_data[asset_id]['daily_total_kwh']}")
 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
-            logging.info(f"{current_hour}")
+            total_kwh = asset_data[asset_id]['total_kwh']
+            daily_total_kwh = asset_data[asset_id]['daily_total_kwh']
 
             # Log or store the total_kwh and daily_total_kwh as needed
             #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}, Daily Total kWh = {asset_data[asset_id]['daily_total_kwh']}")
