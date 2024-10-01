@@ -434,7 +434,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Accumulate the current hour kWh to total_kwh and daily_total_kwh
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh']
+            logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
             daily_total_kwh = previous_daily_total_kwh + asset_data[asset_id]['current_hour_kwh']
+            logging.info(f"The daily_total_kwh for {asset_id} for {current_hour} is {daily_total_kwh}")
 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
