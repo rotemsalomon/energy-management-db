@@ -164,11 +164,23 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         }
 def get_missing_hours(cursor):
     try:
+        now = datetime.now()
         # Get current date in 'YYYY-MM-DD' format
         current_date = datetime.now().strftime('%Y-%m-%d')
         current_hour = datetime.now().hour
         #valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
-        valid_hours = set(range(current_hour))  # List of hours from 00:00 to the previous hour
+
+        # Handle the midnight case: if current hour is 00:00, check the previous day's 23:00
+        # Check if the script is running between 00:00 and 00:59
+        if current_hour == 0:
+            # Script is running between 00:00 and 00:59, handle the previous day
+            previous_date = (now - timedelta(days=1)).strftime('%Y-%m-%d')
+            valid_hours = {23}  # Only the 23rd hour of the previous day is valid in this case
+        else:
+            # Normal case: valid hours from 00:00 to the previous hour of the current day
+            #valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
+            valid_hours = set(range(current_hour))
+
 
         # Query to get hours for the current day from the daily_usage table
         query = '''
@@ -177,9 +189,12 @@ def get_missing_hours(cursor):
         WHERE date = ?
         '''
         
-        cursor.execute(query, (current_date,))
-        update_time = None  # Initialize update_time
+        if current_hour == 0:
+            cursor.execute(query, (previous_date,))
+        else:
+            cursor.execute(query, (current_date,))
 
+        update_time = None  # Initialize update_time
         recorded_hours = set()
             
         for row in cursor.fetchall():
@@ -212,8 +227,12 @@ def get_missing_hours(cursor):
         else:
             logging.info(f"These are missing hours: {missing_hours}")
         
-        return missing_hours, update_time, current_date  # Return missing hours, last update_time, and current_date
-    
+        # Return missing hours, the last update_time, and the current or previous date
+        if current_hour == 0:
+            return missing_hours, update_time, previous_date
+        else:
+            return missing_hours, update_time, current_date
+            
     except Exception as e:
         logging.error(f"An error occurred: {e}")
     
