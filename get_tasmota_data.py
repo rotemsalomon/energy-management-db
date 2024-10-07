@@ -195,7 +195,7 @@ if __name__ == '__main__':
     conn = sqlite3.connect(db_file)
 
     # Log that the script has started
-    logging.info('Starting tasmota_sqlite3 service')
+    logging.info(f"Starting tasmota_sqlite3 service to get data for {asset_id}")
 
     # Fetch asset information and construct the URL components
     asset_name, plug_ip, plug_proto, plug_uri = get_asset_info(conn, asset_id)
