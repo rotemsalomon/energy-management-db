@@ -112,6 +112,39 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         current_data['date'] = (current_data['date'] - timedelta(days=1)).strftime('%Y-%m-%d')
         current_data['hour'] = f"{str(23).zfill(2)}:00"  # Only the 23rd hour of the previous day is valid
 
+    # Query the latest entry in daily_saving to check if it is from the current day
+    query = '''
+    SELECT date FROM daily_saving
+    WHERE asset_id = ? 
+    ORDER BY date DESC LIMIT 1
+    '''
+    cursor.execute(query, (asset_id,))
+    last_saving_entry = cursor.fetchone()
+
+    # If no previous entry exists or the current date is different, reset daily totals
+    if not last_saving_entry or last_saving_entry[0] != current_data['date']:
+        daily_total_kwh_reduction = 0
+        daily_total_kwh_co2e_reduction = 0
+        daily_total_kwh_charge_reduction = 0
+        logging.info(f"New day detected for asset_id {asset_id}, resetting daily totals.")
+    else:
+        # Query to get the latest savings for the current day and hour
+        query = '''
+        SELECT daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction FROM daily_saving
+        WHERE asset_id = ? AND date = ? AND hour = ?
+        '''
+        cursor.execute(query, (asset_id, current_data['date'], current_data['hour']))
+        daily_saving_entries = cursor.fetchone()
+
+        # Set initial values for reductions
+        daily_total_kwh_reduction = 0
+        daily_total_kwh_co2e_reduction = 0
+        daily_total_kwh_charge_reduction = 0
+
+        # If there are existing daily saving entries, unpack them
+        if daily_saving_entries:
+            daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction = daily_saving_entries
+
     # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
     SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
@@ -119,23 +152,6 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     '''
     cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
     benchmark_entries = cursor.fetchall()
-
-    # Query to get latest savings entries for the given asset_id, date, and hour
-    query = '''
-    SELECT daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction FROM daily_saving
-    WHERE asset_id = ? AND date = ? AND hour = ?
-    '''
-    cursor.execute(query, (asset_id, current_data['date'], current_data['hour']))
-    daily_saving_entries = cursor.fetchone()
-
-    # Set initial values for reductions
-    daily_total_kwh_reduction = 0
-    daily_total_kwh_co2e_reduction = 0
-    daily_total_kwh_charge_reduction = 0
-
-    # If there are existing daily saving entries, unpack them
-    if daily_saving_entries:
-        daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction = daily_saving_entries
 
     # If there are no benchmark entries, skip comparison
     if not benchmark_entries:
@@ -153,11 +169,6 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     if 'total_kwh' not in current_data or 'total_kwh_co2e' not in current_data or 'total_kwh_charge' not in current_data:
         logging.error(f"Current data is incomplete: {current_data}")
         return
-
-    # Prepare default values for reductions
-    total_kwh_reduction = 0
-    total_kwh_charge_reduction = 0
-    total_kwh_co2e_reduction = 0
 
     # Calculate reductions based on each benchmark entry
     for benchmark in benchmark_entries:
@@ -188,6 +199,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         'daily_total_kwh_co2e_reduction': daily_total_kwh_co2e_reduction,
         'daily_total_kwh_charge_reduction': daily_total_kwh_charge_reduction
     }
+
 
 def get_missing_hours(cursor):
     try:
