@@ -199,19 +199,19 @@ if __name__ == '__main__':
     # Log that the script has started
     logging.info('Starting tasmota_sqlite3 service')
 
-    # Fetch asset information and construct the URL
+    # Fetch asset information and construct the URL components
     asset_name, plug_ip, plug_proto, plug_uri = get_asset_info(conn, asset_id)
 
-    if url:
+    if plug_ip and plug_proto and plug_uri:
         # Continuous loop to run every 15 seconds
         while True:
             # Fetch and save data 4 times per minute (every 15 seconds)
-            fetch_and_save_data(conn, asset_id, asset_name, plug_proto, plug_ip)
+            fetch_and_save_data(None, conn, asset_id, asset_name, plug_proto, plug_ip, plug_uri)
 
             # Wait for 15 seconds before the next request
             time.sleep(15)
     else:
-        logging.error("No valid URL found. Exiting script.")
+        logging.error("No valid asset information found. Exiting script.")
 
     # Close the database connection when done
     conn.close()
