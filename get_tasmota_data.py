@@ -26,7 +26,6 @@ def create_db_and_table(db_file):
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tasmota_energy_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            url TEXT NOT NULL,
             response_time TEXT NOT NULL,
             energy_time TEXT,
             total_start_time TEXT,
@@ -147,12 +146,11 @@ def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, pl
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO tasmota_energy_data (
-                url, response_time, energy_time, total_start_time, total,
+                response_time, energy_time, total_start_time, total,
                 yesterday, today, period, power, apparent_power, reactive_power, factor, voltage, current,
                 asset_id, asset_name, cur_comp_state, power_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            url,
             power_metrics['response_time'],
             power_metrics['energy_time'],
             power_metrics['total_start_time'],
