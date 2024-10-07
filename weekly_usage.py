@@ -107,7 +107,7 @@ if __name__ == "__main__":
     schedule.every().day.at("00:00").do(update_weekly_usage)
 
     # Run the function directly for testing
-    #update_weekly_usage()
+    update_weekly_usage()
 
     while True:
         schedule.run_pending()
