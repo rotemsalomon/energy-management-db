@@ -75,7 +75,7 @@ def get_power_status(plug_proto, plug_ip):
         # Parse the JSON response
         power_status_data = response.json()
         power_status = power_status_data.get('POWER', 'UNKNOWN')  # Default to 'UNKNOWN' if not found
-        logging.info(f'Power status retrieved: {power_status}')
+        #logging.info(f'Power status retrieved: {power_status}')
         return power_status
     
     except requests.RequestException as e:
@@ -171,7 +171,7 @@ def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, pl
         ))
         conn.commit()
 
-        logging.info(f'Request successful. Data written to database for {url} with compressor state {cur_comp_state} and power status {power_status}.')
+        #logging.info(f'Request successful. Data written to database for {url} with compressor state {cur_comp_state} and power status {power_status}.')
 
     except sqlite3.Error as e:
         logging.error(f"SQLite error occurred: {e}")
