@@ -6,7 +6,11 @@ import argparse
 import logging
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='/var/log/tasmota-scripts.log',
+    filemode='a'
 
 # Function to update the benchmark flag in the daily_usage table
 def update_benchmark_entries(db_file, start_date, end_date, asset_ids):
