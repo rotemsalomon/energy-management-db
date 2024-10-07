@@ -4,8 +4,13 @@ import schedule  # Importing schedule, but we won't use it for now
 import time
 import logging
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    filename='/var/log/tasmota-weekly-usage.log',
+    filemode='a'
+)
 
 # Define the database path
 db_file = '/root/projects/tasmota/sqlite3_db/tasmota_data.db'
