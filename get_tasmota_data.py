@@ -206,7 +206,7 @@ if __name__ == '__main__':
         # Continuous loop to run every 15 seconds
         while True:
             # Fetch and save data 4 times per minute (every 15 seconds)
-            fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip)
+            fetch_and_save_data(conn, asset_id, asset_name, plug_proto, plug_ip)
 
             # Wait for 15 seconds before the next request
             time.sleep(15)
