@@ -200,7 +200,7 @@ if __name__ == '__main__':
     logging.info('Starting tasmota_sqlite3 service')
 
     # Fetch asset information and construct the URL
-    asset_name, plug_ip, plug_proto, plug_uri, url = get_asset_info(conn, asset_id)
+    asset_name, plug_ip, plug_proto, plug_uri = get_asset_info(conn, asset_id)
 
     if url:
         # Continuous loop to run every 15 seconds
