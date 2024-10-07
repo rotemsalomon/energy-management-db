@@ -91,7 +91,7 @@ Turn on headers for SQLite when doing a select
 sqlite> .headers on
 sqlite> .mode table
 
-Inb the daily table:
+In the daily table:
 * total_kwh: Cumulative kWh for each individual asset for the current day.
 * daily_total_kwh: Cumulative kWh for all assets combined for the current day.
 * percentage_change_kwh stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
@@ -108,3 +108,52 @@ percentage_change_kwh: This is the change from the total_kwh value today vs yest
 All assets
 daily_total_kwh: This should be the cumulative kWh for all assets from the start of the day to the current time.
 daily_total_kwh_charge: Total kwh for all kwh used by all assets from the start of the day until current time.
+
+## add column
+ALTER TABLE daily_usage ADD COLUMN is_benchmark INTEGER DEFAULT 0;
+
+## Set benchmark entries
+python3 benchmark_asset_daily_entries.py {arguments - refer script}
+
+
+CREATE TABLE daily_saving (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    update_time TEXT,
+    asset_id TEXT,
+    asset_name TEXT,
+    date TEXT,
+    hour INTEGER,
+    day_of_week TEXT,
+    total_kwh_reduction REAL,
+    total_kwh_charge_reduction REAL,
+    total_kwh_co2e_reduction REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS daily_saving (
+    update_time TEXT,
+    asset_id TEXT,
+    asset_name TEXT,
+    date TEXT,
+    hour TEXT,
+    day_of_week TEXT,
+    total_kwh_reduction REAL,
+    total_kwh_charge_reduction REAL,
+    total_kwh_co2e_reduction REAL,
+    PRIMARY KEY (asset_id, date, hour)  -- Composite primary key
+);
+
+PRAGMA index_info(daily_saving);  ## Display index name
+sqlite> PRAGMA index_info(sqlite_autoindex_daily_saving_1);
+
+SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
+    WHERE asset_id = "DC234SN" AND is_benchmark = 1 AND day_of_week = "Friday" AND hour = "17:00";
+
+
+sqlite> SELECT asset_id, asset_name, SUM(power) AS total_power, MIN(response_time) AS start_time, MAX(response_time) AS end_time
+FROM tasmota_energy_data
+WHERE response_time >= '2024-09-30 03:00:00'
+  AND response_time < '2024-09-30 03:59:59'
+GROUP BY asset_id, asset_name
+ORDER BY response_time;
+

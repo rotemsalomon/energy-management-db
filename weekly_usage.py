@@ -42,15 +42,26 @@ def update_weekly_usage():
         cursor.execute("SELECT asset_name FROM daily_usage WHERE asset_id = ?", (asset_id,))
         asset_name = cursor.fetchone()[0]
 
-        # Sum total_kwh for the current week for this asset_id
+        # Query to get the weekly total for the asset
         cursor.execute("""
             SELECT SUM(total_kwh), SUM(total_kwh_charge) 
             FROM daily_usage 
-            WHERE asset_id = ? AND DATE(update_time) >= ? AND DATE(update_time) <= ?
+            WHERE asset_id = ? 
+            AND hour = '23:00'
+            AND DATE(update_time) >= ? 
+            AND DATE(update_time) <= ?
         """, (asset_id, week_start, week_end))
+
         # Fetch the results
         result = cursor.fetchone()
-        
+
+        # result will be a tuple (sum_total_kwh, sum_total_kwh_charge)
+        if result:
+            weekly_total_kwh, weekly_total_kwh_charge = result
+            logging.info(f"Weekly total kWh: {weekly_total_kwh}, Weekly total charge: {weekly_total_kwh_charge}")
+        else:
+            logging.info("No records found for the specified week and asset.")
+  
         # Handle None if no data, and unpack the results
         total_kwh = result[0] or 0.0  # Sum of total_kwh
         total_kwh_charge = result[1] or 0.0  # Sum of total_kwh_charge
