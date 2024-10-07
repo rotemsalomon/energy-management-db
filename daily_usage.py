@@ -677,7 +677,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     total_kwh_reduction = excluded.total_kwh_reduction,
                     total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
                     total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction,
-                    daily_total_kwh_reduction = exclude.daily_total_kwh_reduction,
+                    daily_total_kwh_reduction = excluded.daily_total_kwh_reduction,
                     daily_total_kwh_co2e_reduction = exclude.daily_total_kwh_co2e_reduction,       
                     daily_total_kwh_charge_reduction = exlude.daily_total_kwh_charge_reduction
             ''', (
