@@ -684,7 +684,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 current_time_str, asset_id, asset_name, current_date, 
                 hour, day_of_week, round(total_kwh_reduction, 3), 
                 round(total_kwh_charge_reduction,3), round(total_kwh_co2e_reduction,3),
-                daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction
+                round(daily_total_kwh_reduction,3), round(daily_total_kwh_co2e_reduction,3), round(daily_total_kwh_charge_reduction,3)
             ))
             conn.commit()
 
