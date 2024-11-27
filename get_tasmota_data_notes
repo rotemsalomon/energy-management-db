@@ -92,9 +92,9 @@ sqlite> .headers on
 sqlite> .mode table
 
 In the daily table:
-* total_kwh: Cumulative kWh for each individual asset for the current day.
-* daily_total_kwh: Cumulative kWh for all assets combined for the current day.
-* percentage_change_kwh stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
+* total_kwh: Cumulative kWh for each individual asset from the start of the day to the current time.
+* daily_total_kwh: Cumulative kWh for all assets combined from the start of the day to the current time.
+>>> NEED THIS FOR ALL ASSETS >>> * percentage_change_kwh stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
 is a % change comparing cumulative kwh usage up to the current hour for both days. 
 
 
@@ -102,7 +102,8 @@ Per asset:
 current_hour_kwh: This should reflect the cumulative kWh for that specific asset in the current hour.
 total_kwh: This should be the cumulative kWh for each specific asset from the start of the day to the current time.
 total_kwh_charge: The total kwh charge for the asset until this hour
-percentage_change_kwh: This is the change from the total_kwh value today vs yesterday same time.
+percentage_change_kwh: stores the relative change in energy usage for a specific asset, for the same time periods (today vs yesterday). It is based on total_kwh values and thus 
+is a % change comparing cumulative kwh usage up to the current hour for both days.
 
 
 All assets
