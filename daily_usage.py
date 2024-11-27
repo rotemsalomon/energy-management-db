@@ -51,7 +51,7 @@ def get_org_id_and_premise_id_for_asset(cursor, asset_id):
     """
     try:
         cursor.execute('''
-            SELECT org_id, premise_id FROM prem_info WHERE asset_id = ?
+            SELECT org_id, premise_id FROM asset_info WHERE asset_id = ?
         ''', (asset_id,))
         result = cursor.fetchone()
         
