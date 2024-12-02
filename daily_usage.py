@@ -168,7 +168,8 @@ def compare_with_benchmark(cursor, asset_id, current_data):
 
     # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
-    SELECT total_kwh, total_kwh_co2e, total_kwh_charge FROM daily_usage
+    SELECT total_kwh, total_kwh_co2e, total_kwh_charge, daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction 
+    FROM daily_usage
     WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
     cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
@@ -193,34 +194,52 @@ def compare_with_benchmark(cursor, asset_id, current_data):
 
     # Calculate reductions based on each benchmark entry
     for benchmark in benchmark_entries:
-        if len(benchmark) != 3:
+        if len(benchmark) != 6:
             logging.error(f"Unexpected benchmark entry format: {benchmark}")
             continue  # Skip this entry
 
-        benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge = benchmark
+        benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge, benchmark_daily_total_kwh_reduction, benchmark_daily_total_kwh_co2e_reduction, benchmark_daily_total_kwh_charge_reduction = benchmark
 
         # Calculate reductions
-        total_kwh_reduction = float(benchmark_total_kwh) - float(current_data['total_kwh'])
-        total_kwh_co2e_reduction = float(benchmark_total_kwh_co2e) - float(current_data['total_kwh_co2e'])
-        total_kwh_charge_reduction = float(benchmark_total_kwh_charge) - float(current_data['total_kwh_charge'])
+        total_kwh_reduction = float(current_data['total_kwh']) - float(benchmark_total_kwh)
+        total_kwh_co2e_reduction = float(current_data['total_kwh_co2e']) - float(benchmark_total_kwh_co2e)
+        total_kwh_charge_reduction = float(current_data['total_kwh_charge']) - float(benchmark_total_kwh_charge)
 
         daily_total_kwh_reduction += total_kwh_reduction
         daily_total_kwh_co2e_reduction += total_kwh_co2e_reduction
         daily_total_kwh_charge_reduction += total_kwh_charge_reduction
 
+        # Calculate reduction percentages
+        total_kwh_reduction_percent = round(total_kwh_reduction / float(benchmark_total_kwh) * 100, 2)
+        total_kwh_charge_reduction_percent = round(total_kwh_co2e_reduction / float(benchmark_total_kwh_co2e) * 100, 2)
+        total_kwh_co2e_reduction_percent = round(total_kwh_charge_reduction / float(benchmark_total_kwh_charge) * 100, 2)
+
+        daily_total_kwh_reduction_percent = round((float(benchmark_daily_total_kwh_reduction) - daily_total_kwh_reduction) / float(benchmark_daily_total_kwh_reduction) * 100, 2)
+        daily_total_kwh_co2e_reduction_percent = round((float(benchmark_daily_total_kwh_co2e_reduction) - daily_total_kwh_co2e_reduction) / float(benchmark_daily_total_kwh_co2e_reduction) * 100, 2)
+        daily_total_kwh_charge_reduction_percent = round((float(benchmark_daily_total_kwh_charge_reduction) - daily_total_kwh_charge_reduction) / float(benchmark_daily_total_kwh_charge_reduction) * 100, 2)
+
         # Log the comparison results
-        logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}")
+        logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}, 
+                     daily kwh reduction: {daily_total_kwh_reduction}, daily_kwh reduction_percent: {daily_total_kwh_reduction_percent}, 
+                     daily_charge_reduction: {daily_total_kwh_charge_reduction}, daily_charge reduction_percent: {daily_total_kwh_charge_reduction_percent}, 
+                     daily_co2e reduction: {daily_total_kwh_co2e_reduction}, daily_co2e reduction_percent: {daily_total_kwh_co2e_reduction_percent}"
+                     )
 
     # Return the reduction results
     return {
         'total_kwh_reduction': total_kwh_reduction,
+        'total_kwh_reduction_percent': total_kwh_reduction_percent,
         'total_kwh_charge_reduction': total_kwh_charge_reduction,
+        'total_kwh_charge_reduction_percent': total_kwh_charge_reduction_percent,
         'total_kwh_co2e_reduction': total_kwh_co2e_reduction,
+        'total_kwh_co2e_reduction_percent': total_kwh_co2e_reduction_percent,
         'daily_total_kwh_reduction': daily_total_kwh_reduction,
         'daily_total_kwh_co2e_reduction': daily_total_kwh_co2e_reduction,
-        'daily_total_kwh_charge_reduction': daily_total_kwh_charge_reduction
+        'daily_total_kwh_charge_reduction': daily_total_kwh_charge_reduction,
+        'daily_total_kwh_reduction_percent': daily_total_kwh_reduction_percent,
+        'daily_total_kwh_co2e_reduction_percent': daily_total_kwh_co2e_reduction_percent,
+        'daily_total_kwh_charge_reduction_percent': daily_total_kwh_charge_reduction_percent
     }
-
 
 def get_missing_hours(cursor):
     try:
@@ -636,10 +655,23 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 daily_total_kwh_reduction = comparison_results['daily_total_kwh_reduction']
                 daily_total_kwh_co2e_reduction = comparison_results['daily_total_kwh_co2e_reduction']
                 daily_total_kwh_charge_reduction = comparison_results['daily_total_kwh_charge_reduction']
-                logging.info(f"Comparison results: {total_kwh_reduction}, {total_kwh_charge_reduction},{total_kwh_co2e_reduction} ")
+
+                total_kwh_reduction_percent = comparison_results['total_kwh_reduction_percent']
+                total_kwh_charge_reduction_percent = comparison_results['total_kwh_charge_reduction_percent']
+                total_kwh_co2e_reduction_percent = comparison_results['total_kwh_co2e_reduction_percent']
+
+                daily_total_kwh_reduction_percent = comparison_results['daily_total_kwh_reduction_percent']
+                daily_total_kwh_co2e_reduction_percent = comparison_results['daily_total_kwh_co2e_reduction_percent']
+                daily_total_kwh_charge_reduction_percent = comparison_results['daily_total_kwh_charge_reduction_percent']
+
+                logging.info(f"Comparison results: {total_kwh_reduction}, {total_kwh_charge_reduction}, {total_kwh_co2e_reduction}, 
+                             {daily_total_kwh_reduction}, {daily_total_kwh_co2e_reduction}, {daily_total_kwh_charge_reduction}, 
+                             {total_kwh_reduction_percent}, {daily_total_kwh_co2e_reduction_percent}, {daily_total_kwh_charge_reduction_percent}"
+                             )
             else:
                 total_kwh_reduction = total_kwh_charge_reduction = total_kwh_co2e_reduction = 0  # Default values if no comparison results
                 daily_total_kwh_reduction = daily_total_kwh_co2e_reduction = daily_total_kwh_charge_reduction = 0
+                total_kwh_reduction_percent = daily_total_kwh_co2e_reduction_percent = daily_total_kwh_charge_reduction_percent = 0
 
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
@@ -660,9 +692,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
                 daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge, day_of_week,
                 total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction,
-                daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction
+                daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction,
+                total_kwh_reduction_percent, total_kwh_charge_reduction_percent, total_kwh_co2e_reduction_percent,
+                daily_total_kwh_reduction_percent, daily_total_kwh_co2e_reduction_percent, daily_total_kwh_charge_reduction_percent
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(asset_id, date, hour) DO UPDATE SET
                 org_id = excluded.org_id,
                 premise_id = excluded.premise_id,
@@ -687,7 +721,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction,
                 daily_total_kwh_reduction = excluded.daily_total_kwh_reduction,
                 daily_total_kwh_co2e_reduction = excluded.daily_total_kwh_co2e_reduction,
-                daily_total_kwh_charge_reduction = excluded.daily_total_kwh_charge_reduction
+                daily_total_kwh_charge_reduction = excluded.daily_total_kwh_charge_reduction,
+                total_kwh_reduction_percent = excluded.total_kwh_reduction_percent,
+                total_co2e_reduction_percent = excluded.total_co2e_percent,
+                total_kwh_charge_reduction_percent = excluded.total_kwh_charge_reduction_percent,
+                daily_total_kwh_reduction_percent = excluded.daily_total_kwh_reduction_percent,
+                daily_total_kwh_co2e_reduction_percent = excluded.daily_total_kwh_co2e_reduction_percent,
+                daily_total_kwh_charge_reduction_percent = excluded.daily_total_kwh_charge_reduction_percent
         ''', (
             asset_id, org_id, premise_id, asset_name, current_date, 
             round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
@@ -699,7 +739,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             round(daily_total_kwh_charge, 2), day_of_week,
             round(total_kwh_reduction, 3), round(total_kwh_charge_reduction, 3),
             round(total_kwh_co2e_reduction, 3), round(daily_total_kwh_reduction, 3),
-            round(daily_total_kwh_co2e_reduction, 3), round(daily_total_kwh_charge_reduction, 3)
+            round(daily_total_kwh_co2e_reduction, 3), round(daily_total_kwh_charge_reduction, 3),
+            round(total_kwh_reduction_percent, 2), round(total_kwh_co2e_reduction_percent, 2),
+            round(total_kwh_charge_reduction_percent, 2),
+            round(daily_total_kwh_reduction_percent, 2), round(daily_total_kwh_co2e_reduction_percent, 2),
+            round(daily_total_kwh_charge_reduction_percent, 2)
         ))
         conn.commit()
 
