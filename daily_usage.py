@@ -195,29 +195,29 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     # Calculate reductions based on each benchmark entry
     for benchmark in benchmark_entries:
         if len(benchmark) != 6:
-            logging.error(f"Unexpected benchmark entry format: {benchmark}")
+            logging.error(f"Unexpected1 benchmark entry format: {benchmark}")
             continue  # Skip this entry
 
         benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge, benchmark_daily_total_kwh_reduction, benchmark_daily_total_kwh_co2e_reduction, benchmark_daily_total_kwh_charge_reduction = benchmark
 
         # Handle case where benchmark values are not REAL numbers
         if not isinstance(benchmark_total_kwh, (int, float)) or not isinstance(benchmark_total_kwh_co2e, (int, float)) or not isinstance(benchmark_total_kwh_charge, (int, float)):
-            logging.error(f"Unexpected benchmark total_kwh, total_kwh_co2e, or total_kwh_charge value: {benchmark}")
+            logging.error(f"Unexpected2 total_kwh, total_kwh_co2e, or total_kwh_charge value: {benchmark}")
             continue  # Skip this entry
 
         # Handle case where benchmark_daily_total_kwh_reduction is not a REAL number
         if not isinstance(benchmark_daily_total_kwh_reduction, (int, float)):
-            logging.error(f"Unexpected benchmark daily_total_kwh_reduction value: {benchmark_daily_total_kwh_reduction}")
+            logging.error(f"Unexpected3 benchmark daily_total_kwh_reduction value: {benchmark_daily_total_kwh_reduction}")
             continue  # Skip this entry
 
         # Handle case where benchmark_daily_total_kwh_co2e_reduction is not a REAL number
         if not isinstance(benchmark_daily_total_kwh_co2e_reduction, (int, float)):
-            logging.error(f"Unexpected benchmark daily_total_kwh_co2e_reduction value: {benchmark_daily_total_kwh_co2e_reduction}")
+            logging.error(f"Unexpected4 benchmark daily_total_kwh_co2e_reduction value: {benchmark_daily_total_kwh_co2e_reduction}")
             continue  # Skip this entry
 
         # Handle case where benchmark_daily_total_kwh_charge_reduction is not a REAL number
         if not isinstance(benchmark_daily_total_kwh_charge_reduction, (int, float)):
-            logging.error(f"Unexpected benchmark daily_total_kwh_charge_reduction value: {benchmark_daily_total_kwh_charge_reduction}")
+            logging.error(f"Unexpected benchmark5 daily_total_kwh_charge_reduction value: {benchmark_daily_total_kwh_charge_reduction}")
             continue  # Skip this entry
 
         # Calculate reductions
