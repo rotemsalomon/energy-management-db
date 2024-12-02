@@ -201,7 +201,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge, benchmark_daily_total_kwh_reduction, benchmark_daily_total_kwh_co2e_reduction, benchmark_daily_total_kwh_charge_reduction = benchmark
 
         # Calculate reductions
-        total_kwh_reduction = git(current_data['total_kwh']) - float(benchmark_total_kwh)
+        total_kwh_reduction = float(current_data['total_kwh']) - float(benchmark_total_kwh)
         total_kwh_co2e_reduction = float(current_data['total_kwh_co2e']) - float(benchmark_total_kwh_co2e)
         total_kwh_charge_reduction = float(current_data['total_kwh_charge']) - float(benchmark_total_kwh_charge)
 
