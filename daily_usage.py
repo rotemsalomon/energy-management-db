@@ -219,11 +219,12 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         daily_total_kwh_charge_reduction_percent = round((float(benchmark_daily_total_kwh_charge_reduction) - daily_total_kwh_charge_reduction) / float(benchmark_daily_total_kwh_charge_reduction) * 100, 2)
 
         # Log the comparison results
-        logging.info(f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}, 
-                     daily kwh reduction: {daily_total_kwh_reduction}, daily_kwh reduction_percent: {daily_total_kwh_reduction_percent}, 
-                     daily_charge_reduction: {daily_total_kwh_charge_reduction}, daily_charge reduction_percent: {daily_total_kwh_charge_reduction_percent}, 
-                     daily_co2e reduction: {daily_total_kwh_co2e_reduction}, daily_co2e reduction_percent: {daily_total_kwh_co2e_reduction_percent}"
-                     )
+        logging.info(
+            f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}, "
+            f"daily kwh reduction: {daily_total_kwh_reduction}, daily_kwh reduction_percent: {daily_total_kwh_reduction_percent}, "
+            f"daily_charge_reduction: {daily_total_kwh_charge_reduction}, daily_charge reduction_percent: {daily_total_kwh_charge_reduction_percent}, "
+            f"daily_co2e reduction: {daily_total_kwh_co2e_reduction}, daily_co2e reduction_percent: {daily_total_kwh_co2e_reduction_percent}"
+        )
 
     # Return the reduction results
     return {
