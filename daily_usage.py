@@ -608,7 +608,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 'date': current_date,
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
-                'total_kwh_charge': total_kwh_charge
+                'total_kwh_charge': total_kwh_charge,
+                'daily_total_kwh': daily_total_kwh,
+                'daily_total_kwh_co2e': daily_total_kwh_co2e,
+                'daily_total_kwh_charge': daily_total_kwh_charge
             }
             # Run the function and calculate values
             comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
