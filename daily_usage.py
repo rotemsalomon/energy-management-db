@@ -294,8 +294,8 @@ def calculate_daily_consumption_by_asset(db_file):
                 # Process metrics for current_hour
                 logging.info(f"Getting records for all assets for the day: {current_date}")
                 daily_asset_records = get_asset_records_for_day (cursor, current_date)
-                formatted_hour = f"{str(current_hour).zfill(2)}:00"
-                logging.info(f"Processing metrics for missing hour: {formatted_hour}")
+                #formatted_hour = f"{str(current_hour).zfill(2)}:00"
+                #logging.info(f"Processing metrics for missing hour: {formatted_hour}")
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)  # Pass current_hour and current_date directly
 
             # When done processing missing hours, set current_hour to update_time.
@@ -345,7 +345,7 @@ def get_asset_records_for_day (cursor, current_date):
             logging.warning("No data found for the current day")
             return
 
-        logging.info(f"Fetched {len(daily_asset_records)} records for processing")
+        #logging.info(f"Fetched {len(daily_asset_records)} records for processing")
 
         return daily_asset_records
     
@@ -366,7 +366,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         logging.info(f"Debugging: Processing records for: {current_date}")
         current_hour_str = f"{current_hour:02d}:00"
-        logging.info(f"Debugging: Processing records for: {current_hour_str}")
+        logging.info(f"Debugging: Processing {len(daily_asset_records)} records for: {current_hour_str}")
 
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
@@ -659,68 +659,68 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
-        # Insert or update the record in daily_usage (consolidated with daily saving entries)
-        cursor.execute('''
-            INSERT INTO daily_usage (
-                asset_id, org_id, premise_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
-                max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
-                percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
-                daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge, day_of_week,
-                total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction,
-                daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction,
-                total_kwh_reduction_percent, total_kwh_charge_reduction_percent, total_kwh_co2e_reduction_percent,
-                daily_total_kwh_reduction_percent, daily_total_kwh_co2e_reduction_percent, daily_total_kwh_charge_reduction_percent
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(asset_id, date, hour) DO UPDATE SET
-                org_id = excluded.org_id,
-                premise_id = excluded.premise_id,
-                total_kwh = excluded.total_kwh,
-                cnt_comp_on = excluded.cnt_comp_on,
-                cnt_comp_off = excluded.cnt_comp_off,
-                ave_comp_runtime = excluded.ave_comp_runtime,
-                max_comp_runtime = excluded.max_comp_runtime,
-                min_comp_runtime = excluded.min_comp_runtime,
-                update_time = excluded.update_time,
-                total_kwh_charge = excluded.total_kwh_charge,
-                percentage_change_kwh = excluded.percentage_change_kwh,
-                daily_total_kwh = excluded.daily_total_kwh,
-                current_hour_kwh = excluded.current_hour_kwh,
-                total_kwh_co2e = excluded.total_kwh_co2e,
-                daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
-                current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
-                daily_total_kwh_charge = excluded.daily_total_kwh_charge,
-                day_of_week = excluded.day_of_week,
-                total_kwh_reduction = excluded.total_kwh_reduction,
-                total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
-                total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction,
-                daily_total_kwh_reduction = excluded.daily_total_kwh_reduction,
-                daily_total_kwh_co2e_reduction = excluded.daily_total_kwh_co2e_reduction,
-                daily_total_kwh_charge_reduction = excluded.daily_total_kwh_charge_reduction,
-                total_kwh_reduction_percent = excluded.total_kwh_reduction_percent,
-                total_kwh_co2e_reduction_percent = excluded.total_kwh_co2e_reduction_percent,
-                total_kwh_charge_reduction_percent = excluded.total_kwh_charge_reduction_percent,
-                daily_total_kwh_reduction_percent = excluded.daily_total_kwh_reduction_percent,
-                daily_total_kwh_co2e_reduction_percent = excluded.daily_total_kwh_co2e_reduction_percent,
-                daily_total_kwh_charge_reduction_percent = excluded.daily_total_kwh_charge_reduction_percent
-        ''', (
-            asset_id, org_id, premise_id, asset_name, current_date, 
-            round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
-            ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-            current_time_str, round(total_kwh_charge, 2), hour, 
-            round(percentage_change_kwh, 2), round(daily_total_kwh, 2), 
-            round(asset_current_hour_kwh, 3), total_kwh_co2e, 
-            daily_total_kwh_co2e, current_hour_kwh_co2e, 
-            round(daily_total_kwh_charge, 2), day_of_week,
-            round(total_kwh_reduction, 3), round(total_kwh_charge_reduction, 3),
-            round(total_kwh_co2e_reduction, 3), round(daily_total_kwh_reduction, 3),
-            round(daily_total_kwh_co2e_reduction, 3), round(daily_total_kwh_charge_reduction, 3),
-            round(total_kwh_reduction_percent, 2), round(total_kwh_co2e_reduction_percent, 2),
-            round(total_kwh_charge_reduction_percent, 2),
-            round(daily_total_kwh_reduction_percent, 2), round(daily_total_kwh_co2e_reduction_percent, 2),
-            round(daily_total_kwh_charge_reduction_percent, 2)
-        ))
-        conn.commit()
+            # Insert or update the record in daily_usage (consolidated with daily saving entries)
+            cursor.execute('''
+                INSERT INTO daily_usage (
+                    asset_id, org_id, premise_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
+                    max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
+                    percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
+                    daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge, day_of_week,
+                    total_kwh_reduction, total_kwh_charge_reduction, total_kwh_co2e_reduction,
+                    daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction,
+                    total_kwh_reduction_percent, total_kwh_charge_reduction_percent, total_kwh_co2e_reduction_percent,
+                    daily_total_kwh_reduction_percent, daily_total_kwh_co2e_reduction_percent, daily_total_kwh_charge_reduction_percent
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(asset_id, date, hour) DO UPDATE SET
+                    org_id = excluded.org_id,
+                    premise_id = excluded.premise_id,
+                    total_kwh = excluded.total_kwh,
+                    cnt_comp_on = excluded.cnt_comp_on,
+                    cnt_comp_off = excluded.cnt_comp_off,
+                    ave_comp_runtime = excluded.ave_comp_runtime,
+                    max_comp_runtime = excluded.max_comp_runtime,
+                    min_comp_runtime = excluded.min_comp_runtime,
+                    update_time = excluded.update_time,
+                    total_kwh_charge = excluded.total_kwh_charge,
+                    percentage_change_kwh = excluded.percentage_change_kwh,
+                    daily_total_kwh = excluded.daily_total_kwh,
+                    current_hour_kwh = excluded.current_hour_kwh,
+                    total_kwh_co2e = excluded.total_kwh_co2e,
+                    daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
+                    current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
+                    daily_total_kwh_charge = excluded.daily_total_kwh_charge,
+                    day_of_week = excluded.day_of_week,
+                    total_kwh_reduction = excluded.total_kwh_reduction,
+                    total_kwh_charge_reduction = excluded.total_kwh_charge_reduction,
+                    total_kwh_co2e_reduction = excluded.total_kwh_co2e_reduction,
+                    daily_total_kwh_reduction = excluded.daily_total_kwh_reduction,
+                    daily_total_kwh_co2e_reduction = excluded.daily_total_kwh_co2e_reduction,
+                    daily_total_kwh_charge_reduction = excluded.daily_total_kwh_charge_reduction,
+                    total_kwh_reduction_percent = excluded.total_kwh_reduction_percent,
+                    total_kwh_co2e_reduction_percent = excluded.total_kwh_co2e_reduction_percent,
+                    total_kwh_charge_reduction_percent = excluded.total_kwh_charge_reduction_percent,
+                    daily_total_kwh_reduction_percent = excluded.daily_total_kwh_reduction_percent,
+                    daily_total_kwh_co2e_reduction_percent = excluded.daily_total_kwh_co2e_reduction_percent,
+                    daily_total_kwh_charge_reduction_percent = excluded.daily_total_kwh_charge_reduction_percent
+            ''', (
+                asset_id, org_id, premise_id, asset_name, current_date, 
+                round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
+                ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
+                current_time_str, round(total_kwh_charge, 2), hour, 
+                round(percentage_change_kwh, 2), round(daily_total_kwh, 2), 
+                round(asset_current_hour_kwh, 3), total_kwh_co2e, 
+                daily_total_kwh_co2e, current_hour_kwh_co2e, 
+                round(daily_total_kwh_charge, 2), day_of_week,
+                round(total_kwh_reduction, 3), round(total_kwh_charge_reduction, 3),
+                round(total_kwh_co2e_reduction, 3), round(daily_total_kwh_reduction, 3),
+                round(daily_total_kwh_co2e_reduction, 3), round(daily_total_kwh_charge_reduction, 3),
+                round(total_kwh_reduction_percent, 2), round(total_kwh_co2e_reduction_percent, 2),
+                round(total_kwh_charge_reduction_percent, 2),
+                round(daily_total_kwh_reduction_percent, 2), round(daily_total_kwh_co2e_reduction_percent, 2),
+                round(daily_total_kwh_charge_reduction_percent, 2)
+            ))
+            conn.commit()
 
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
