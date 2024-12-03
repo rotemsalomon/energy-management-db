@@ -133,129 +133,71 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         current_data['date'] = (current_data['date'] - timedelta(days=1)).strftime('%Y-%m-%d')
         current_data['hour'] = f"{str(23).zfill(2)}:00"  # Only the 23rd hour of the previous day is valid
 
-    # Query the latest saving entry in daily_usage table to check if it is from the current day
+    # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
-    SELECT date FROM daily_usage
-    WHERE asset_id = ? 
-    ORDER BY date DESC LIMIT 1
+    SELECT total_kwh, total_kwh_co2e, total_kwh_charge, daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge
+    FROM daily_usage
+    WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
-    cursor.execute(query, (asset_id,))
-    last_saving_entry = cursor.fetchone()
+    cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
+    benchmark_entry = cursor.fetchone()
 
-    # If no previous entry exists or the current date is different, reset daily totals
-    if not last_saving_entry or last_saving_entry[0] != current_data['date']:
-        daily_total_kwh_reduction = 0
-        daily_total_kwh_co2e_reduction = 0
-        daily_total_kwh_charge_reduction = 0
-        logging.info(f"New day detected for asset_id {asset_id}, resetting daily totals.")
-    else:
-        # Query to get the latest savings for the current day and hour
-        query = '''
-        SELECT daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction FROM daily_usage
-        WHERE asset_id = ? AND date = ? AND hour = ?
-        '''
-        cursor.execute(query, (asset_id, current_data['date'], current_data['hour']))
-        daily_usage_entries = cursor.fetchone()
+    # If there are no benchmark entries, return None
+    if not benchmark_entry:
+        logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
+        return None
 
-        # Set initial values for reductions
-        daily_total_kwh_reduction = 0
-        daily_total_kwh_co2e_reduction = 0
-        daily_total_kwh_charge_reduction = 0
+    # Helper function to ensure value is REAL
+    def ensure_real(value):
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            logging.error(f"Failed to convert value to REAL: {value}")
+            return None
 
-        # If there are existing daily saving entries, unpack them
-        if daily_usage_entries:
-            daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction = daily_usage_entries
+    # Unpack and convert benchmark values
+    benchmark_values = list(map(ensure_real, benchmark_entry))
+    if None in benchmark_values:
+        logging.error(f"Skipping entry due to conversion error: {benchmark_entry}")
+        return None
 
-        # Query to get benchmark entries for the given asset_id, day_of_week, and hour
-        query = '''
-        SELECT total_kwh, total_kwh_co2e, total_kwh_charge, daily_total_kwh_reduction, daily_total_kwh_co2e_reduction, daily_total_kwh_charge_reduction 
-        FROM daily_usage
-        WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
-        '''
-        cursor.execute(query, (asset_id, current_data['day_of_week'], current_data['hour']))
-        benchmark_entries = cursor.fetchall()
+    # Unpack benchmark values
+    (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge,
+     benchmark_daily_total_kwh, benchmark_daily_total_kwh_co2e, benchmark_daily_total_kwh_charge) = benchmark_values
 
-        # If there are no benchmark entries, skip comparison
-        if not benchmark_entries:
-            logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
-            return {
-                'total_kwh_reduction': 0,
-                'total_kwh_charge_reduction': 0,
-                'total_kwh_co2e_reduction': 0,
-                'daily_total_kwh_reduction': daily_total_kwh_reduction,
-                'daily_total_kwh_co2e_reduction': daily_total_kwh_co2e_reduction,
-                'daily_total_kwh_charge_reduction': daily_total_kwh_charge_reduction
-            }
+    # Calculate reductions
+    total_kwh_reduction = current_data['total_kwh'] - benchmark_total_kwh
+    total_kwh_co2e_reduction = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
+    total_kwh_charge_reduction = current_data['total_kwh_charge'] - benchmark_total_kwh_charge
+    daily_total_kwh_reduction = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
+    daily_total_kwh_co2e_reduction = current_data['daily_total_kwh_co2e'] - benchmark_daily_total_kwh_co2e
+    daily_total_kwh_charge_reduction = current_data['daily_total_kwh_charge'] - benchmark_daily_total_kwh_charge
 
-        # Ensure that current_data contains the necessary fields
-        if 'total_kwh' not in current_data or 'total_kwh_co2e' not in current_data or 'total_kwh_charge' not in current_data:
-            logging.error(f"Current data is incomplete: {current_data}")
-            return
+    # Calculate reduction percentages
+    def calculate_percentage(reduction, benchmark):
+        return round((reduction / benchmark) * 100, 2) if benchmark != 0 else 0
 
-        # Helper function to ensure value is REAL
-        def ensure_real(value, name):
-            try:
-                return float(value)
-            except (ValueError, TypeError):
-                logging.error(f"Failed to convert {name} to REAL: {value}")
-                return None
+    total_kwh_reduction_percent = calculate_percentage(total_kwh_reduction, benchmark_total_kwh)
+    total_kwh_co2e_reduction_percent = calculate_percentage(total_kwh_co2e_reduction, benchmark_total_kwh_co2e)
+    total_kwh_charge_reduction_percent = calculate_percentage(total_kwh_charge_reduction, benchmark_total_kwh_charge)
+    daily_total_kwh_reduction_percent = calculate_percentage(daily_total_kwh_reduction, benchmark_daily_total_kwh)
+    daily_total_kwh_co2e_reduction_percent = calculate_percentage(daily_total_kwh_co2e_reduction, benchmark_daily_total_kwh_co2e)
+    daily_total_kwh_charge_reduction_percent = calculate_percentage(daily_total_kwh_charge_reduction, benchmark_daily_total_kwh_charge)
 
-        # Calculate reductions based on each benchmark entry
-        for benchmark in benchmark_entries:
-            if len(benchmark) != 6:
-                logging.error(f"Unexpected benchmark entry format: {benchmark}")
-                continue  # Skip this entry
+    # Log comparison results
+    logging.info(f"Comparison results for asset_id {asset_id}: "
+                 f"{total_kwh_reduction} kWh, {total_kwh_co2e_reduction} CO2e, {total_kwh_charge_reduction} charge, "
+                 f"{total_kwh_reduction_percent}% reduction in kWh, "
+                 f"{total_kwh_co2e_reduction_percent}% reduction in CO2e, "
+                 f"{total_kwh_charge_reduction_percent}% reduction in charge.")
 
-            # Unpack and convert benchmark values
-            benchmark_total_kwh = ensure_real(benchmark[0], "benchmark_total_kwh")
-            benchmark_total_kwh_co2e = ensure_real(benchmark[1], "benchmark_total_kwh_co2e")
-            benchmark_total_kwh_charge = ensure_real(benchmark[2], "benchmark_total_kwh_charge")
-            benchmark_daily_total_kwh_reduction = ensure_real(benchmark[3], "benchmark_daily_total_kwh_reduction")
-            benchmark_daily_total_kwh_co2e_reduction = ensure_real(benchmark[4], "benchmark_daily_total_kwh_co2e_reduction")
-            benchmark_daily_total_kwh_charge_reduction = ensure_real(benchmark[5], "benchmark_daily_total_kwh_charge_reduction")
-
-            # Skip if any conversion fails
-            if None in (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge,
-                        benchmark_daily_total_kwh_reduction, benchmark_daily_total_kwh_co2e_reduction,
-                        benchmark_daily_total_kwh_charge_reduction):
-                logging.error(f"Skipping entry due to conversion error: {benchmark}")
-                continue
-
-            # Calculate reductions
-            total_kwh_reduction = current_data['total_kwh'] - benchmark_total_kwh
-            total_kwh_co2e_reduction = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
-            total_kwh_charge_reduction = current_data['total_kwh_charge'] - benchmark_total_kwh_charge
-
-            daily_total_kwh_reduction += total_kwh_reduction
-            daily_total_kwh_co2e_reduction += total_kwh_co2e_reduction
-            daily_total_kwh_charge_reduction += total_kwh_charge_reduction
-
-            # Calculate reduction percentages
-            total_kwh_reduction_percent = round(total_kwh_reduction / benchmark_total_kwh * 100, 2)
-            total_kwh_charge_reduction_percent = round(total_kwh_co2e_reduction / benchmark_total_kwh_co2e * 100, 2)
-            total_kwh_co2e_reduction_percent = round(total_kwh_charge_reduction / benchmark_total_kwh_charge * 100, 2)
-
-            daily_total_kwh_reduction_percent = round((benchmark_daily_total_kwh_reduction - daily_total_kwh_reduction) / benchmark_daily_total_kwh_reduction * 100, 2)
-            daily_total_kwh_co2e_reduction_percent = round((benchmark_daily_total_kwh_co2e_reduction - daily_total_kwh_co2e_reduction) / benchmark_daily_total_kwh_co2e_reduction * 100, 2)
-            daily_total_kwh_charge_reduction_percent = round((benchmark_daily_total_kwh_charge_reduction - daily_total_kwh_charge_reduction) / benchmark_daily_total_kwh_charge_reduction * 100, 2)
-
-            logging.info(f"Processed reductions for benchmark: {benchmark}")
-
-        # Log the comparison results
-        logging.info(
-            f"Comparing {asset_id} - kWh reduction: {total_kwh_reduction}, Charge reduction: {total_kwh_charge_reduction}, CO2e reduction: {total_kwh_co2e_reduction}, "
-            f"daily kwh reduction: {daily_total_kwh_reduction}, daily_kwh reduction_percent: {daily_total_kwh_reduction_percent}, "
-            f"daily_charge_reduction: {daily_total_kwh_charge_reduction}, daily_charge reduction_percent: {daily_total_kwh_charge_reduction_percent}, "
-            f"daily_co2e reduction: {daily_total_kwh_co2e_reduction}, daily_co2e reduction_percent: {daily_total_kwh_co2e_reduction_percent}"
-        )
-
-    # Return the reduction results
+    # Return all the reduction results
     return {
         'total_kwh_reduction': total_kwh_reduction,
-        'total_kwh_reduction_percent': total_kwh_reduction_percent,
         'total_kwh_charge_reduction': total_kwh_charge_reduction,
-        'total_kwh_charge_reduction_percent': total_kwh_charge_reduction_percent,
         'total_kwh_co2e_reduction': total_kwh_co2e_reduction,
+        'total_kwh_reduction_percent': total_kwh_reduction_percent,
+        'total_kwh_charge_reduction_percent': total_kwh_charge_reduction_percent,
         'total_kwh_co2e_reduction_percent': total_kwh_co2e_reduction_percent,
         'daily_total_kwh_reduction': daily_total_kwh_reduction,
         'daily_total_kwh_co2e_reduction': daily_total_kwh_co2e_reduction,
@@ -671,7 +613,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Run the function and calculate values
             comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
 
-            # Extract reduction values if comparison results exist
+            # If comparison results exist, extract the reduction values
             if comparison_results:
                 total_kwh_reduction = comparison_results['total_kwh_reduction']
                 total_kwh_charge_reduction = comparison_results['total_kwh_charge_reduction']
@@ -691,12 +633,17 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 logging.info(
                     f"Comparison results: {total_kwh_reduction}, {total_kwh_charge_reduction}, {total_kwh_co2e_reduction}, "
                     f"{daily_total_kwh_reduction}, {daily_total_kwh_co2e_reduction}, {daily_total_kwh_charge_reduction}, "
-                    f"{total_kwh_reduction_percent}, {daily_total_kwh_co2e_reduction_percent}, {daily_total_kwh_charge_reduction_percent}"
+                    f"{total_kwh_reduction_percent}, {total_kwh_charge_reduction_percent}, {total_kwh_co2e_reduction_percent},"
+                    f"{daily_total_kwh_reduction_percent}, {daily_total_kwh_co2e_reduction_percent}, {daily_total_kwh_charge_reduction_percent}"
                 )
             else:
-                total_kwh_reduction = total_kwh_charge_reduction = total_kwh_co2e_reduction = 0  # Default values if no comparison results
+                # If no comparison results, set all reductions and percentages to 0
+                total_kwh_reduction = total_kwh_charge_reduction = total_kwh_co2e_reduction = 0
                 daily_total_kwh_reduction = daily_total_kwh_co2e_reduction = daily_total_kwh_charge_reduction = 0
-                total_kwh_reduction_percent = daily_total_kwh_co2e_reduction_percent = daily_total_kwh_charge_reduction_percent = 0
+                total_kwh_reduction_percent = total_kwh_charge_reduction_percent = total_kwh_co2e_reduction_percent = 0
+                daily_total_kwh_reduction_percent = daily_total_kwh_co2e_reduction_percent = daily_total_kwh_charge_reduction_percent = 0
+
+                logging.info("No benchmark entries found, using default values for reductions and percentages.")
 
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
