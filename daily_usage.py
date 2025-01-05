@@ -682,9 +682,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         # Fetch results
         results = cursor.fetchone()
         if results:
-            daily_total_kwh = results['daily_total_kwh']
-            daily_total_kwh_co2e = results['daily_total_kwh_co2e']
-            daily_total_kwh_charge = results['daily_total_kwh_charge']
+            daily_total_kwh = float(results['daily_total_kwh']) if results['daily_total_kwh'] is not None else 0.0
+            daily_total_kwh_co2e = float(results['daily_total_kwh_co2e']) if results['daily_total_kwh_co2e'] is not None else 0.0
+            daily_total_kwh_charge = float(results['daily_total_kwh_charge']) if results['daily_total_kwh_charge'] is not None else 0.0
 
             # Update all rows for the current date and hour with the daily totals
             cursor.execute('''
