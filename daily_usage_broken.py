@@ -271,6 +271,7 @@ def get_missing_hours(cursor):
 
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row  # Enable named access
     cursor = conn.cursor()
     try:
         # Get missing hours and associated data
@@ -616,7 +617,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     total_kwh_delta, total_kwh_charge_delta, total_kwh_co2e_delta,
                     total_kwh_delta_percent, total_kwh_charge_delta_percent, total_kwh_co2e_delta_percent
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(asset_id, date, hour) DO UPDATE SET
                     org_id = excluded.org_id,
                     premise_id = excluded.premise_id,
@@ -654,7 +655,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 round(total_kwh_charge_delta_percent, 2)
             ))
             conn.commit()
-        
+
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
         # Calculate daily metric values for the current date and hour
