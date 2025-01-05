@@ -681,6 +681,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         # Fetch results
         results = cursor.fetchone()
+        logging.debug(f"Results fetched: {results}")
+
         if results:
             daily_total_kwh = float(results['daily_total_kwh']) if results['daily_total_kwh'] is not None else 0.0
             daily_total_kwh_co2e = float(results['daily_total_kwh_co2e']) if results['daily_total_kwh_co2e'] is not None else 0.0
