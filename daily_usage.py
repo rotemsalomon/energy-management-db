@@ -603,17 +603,14 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             daily_total_kwh_co2e = calculate_co2e_emission(daily_total_kwh)
             
-            """# Prepare data to pass to benchmark delta function
+            # Prepare data to pass to benchmark delta function
             current_data = {
                 'day_of_week': day_of_week,
                 'hour': f"{str(current_hour).zfill(2)}:00",  # Use current_hour directly
                 'date': current_date,
                 'total_kwh': total_kwh,
                 'total_kwh_co2e': total_kwh_co2e,
-                'total_kwh_charge': total_kwh_charge,
-                'daily_total_kwh': daily_total_kwh,
-                'daily_total_kwh_co2e': daily_total_kwh_co2e,
-                'daily_total_kwh_charge': daily_total_kwh_charge
+                'total_kwh_charge': total_kwh_charge
             }
             # Run the function and calculate values
             comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
@@ -623,31 +620,18 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 total_kwh_delta = comparison_results['total_kwh_delta']
                 total_kwh_charge_delta = comparison_results['total_kwh_charge_delta']
                 total_kwh_co2e_delta = comparison_results['total_kwh_co2e_delta']
-                daily_total_kwh_delta = comparison_results['daily_total_kwh_delta']
-                daily_total_kwh_co2e_delta = comparison_results['daily_total_kwh_co2e_delta']
-                daily_total_kwh_charge_delta = comparison_results['daily_total_kwh_charge_delta']
 
                 total_kwh_delta_percent = comparison_results['total_kwh_delta_percent']
                 total_kwh_charge_delta_percent = comparison_results['total_kwh_charge_delta_percent']
                 total_kwh_co2e_delta_percent = comparison_results['total_kwh_co2e_delta_percent']
 
-                daily_total_kwh_delta_percent = comparison_results['daily_total_kwh_delta_percent']
-                daily_total_kwh_co2e_delta_percent = comparison_results['daily_total_kwh_co2e_delta_percent']
-                daily_total_kwh_charge_delta_percent = comparison_results['daily_total_kwh_charge_delta_percent']
-
                 logging.info(
                     f"Comparison results: {total_kwh_delta}, {total_kwh_charge_delta}, {total_kwh_co2e_delta}, "
-                    f"{daily_total_kwh_delta}, {daily_total_kwh_co2e_delta}, {daily_total_kwh_charge_delta}, "
-                    f"{total_kwh_delta_percent}, {total_kwh_charge_delta_percent}, {total_kwh_co2e_delta_percent},"
-                    f"{daily_total_kwh_delta_percent}, {daily_total_kwh_co2e_delta_percent}, {daily_total_kwh_charge_delta_percent}"
-                )
+                    f"{total_kwh_delta_percent}, {total_kwh_charge_delta_percent}, {total_kwh_co2e_delta_percent}"                )
             else:
                 # If no comparison results, set all deltas and percentages to 0
                 total_kwh_delta = total_kwh_charge_delta = total_kwh_co2e_delta = 0
-                daily_total_kwh_delta = daily_total_kwh_co2e_delta = daily_total_kwh_charge_delta = 0
                 total_kwh_delta_percent = total_kwh_charge_delta_percent = total_kwh_co2e_delta_percent = 0
-                daily_total_kwh_delta_percent = daily_total_kwh_co2e_delta_percent = daily_total_kwh_charge_delta_percent = 0
-
                 logging.info("No benchmark entries found, using default values for deltas and percentages.")
 
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
@@ -656,8 +640,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
-            logging.info(f"The daily_total_kwh as of {current_hour} is {daily_total_kwh}")
-            logging.info(f"The daily_total_kwh as of previous hour: {previous_daily_total_kwh}")"""
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
