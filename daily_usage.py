@@ -710,6 +710,37 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
+                # Calculate daily metric values for the current date and hour
+        cursor.execute('''
+            SELECT 
+                SUM(total_kwh) AS daily_total_kwh, 
+                SUM(total_kwh_co2e) AS daily_total_kwh_co2e, 
+                SUM(total_kwh_charge) AS daily_total_kwh_charge
+            FROM daily_usage
+            WHERE date = ? AND hour = ?
+        ''', (current_date, f"{str(current_hour).zfill(2)}:00"))
+
+        # Fetch results
+        results = cursor.fetchone()
+        if results:
+            daily_total_kwh = results['daily_total_kwh']
+            daily_total_kwh_co2e = results['daily_total_kwh_co2e']
+            daily_total_kwh_charge = results['daily_total_kwh_charge']
+
+            # Update all rows for the current date and hour with the daily totals
+            cursor.execute('''
+                UPDATE daily_usage
+                SET 
+                    daily_total_kwh = ?,
+                    daily_total_kwh_co2e = ?,
+                    daily_total_kwh_charge = ?
+                WHERE date = ? AND hour = ?
+            ''', (daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, current_date, f"{str(current_hour).zfill(2)}:00"))
+
+            # Commit changes
+            conn.commit()
+            logging.info("Daily metric values updated successfully for all asset entries.")
+
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
     #finally:
