@@ -380,7 +380,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     'last_processed_hour': -1,  # Track the last processed hour
                     'compressor_runtimes': [],
                     'response_time_count': 0,  # Initialize the count of response times
-                    'daily_total_kwh': 0,  # daily_total_kwh starts at 0 for new day
                     'last_date': current_date,  # Track the last date this asset was updated
                     'last_hour': None  # Track the last hour this asset was updated
                 }
@@ -440,13 +439,12 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Cumulative kwh for all assets.
             #daily_total_kwh += kwh # Add kwh (above) to the current asset_id daily_total_kwh value.
 
-            # Cummulate total_kwh and daily_total_kwh per asset for current_time per hour.
+            # Cummulate total_kwh per asset for current_time per hour.
             # Check if the date has changed (new day)
             if asset_data[asset_id]['last_date'] != current_date:
                 #logging.info(f"last date != current_date")
                 # Reset total_kwh and daily_total_kwh for a new day
                 asset_data[asset_id]['total_kwh'] = 0.0
-                asset_data[asset_id]['daily_total_kwh'] = 0.0
                 asset_data[asset_id]['last_date'] = current_date  # Update to new date
                 asset_data[asset_id]['last_hour'] = None  # Reset hour tracking for new day
 
@@ -455,49 +453,41 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"{last_hour}")
 
             if last_hour is None:  # First hour of the day
-                # First hour of the day: set total_kwh and daily_total_kwh to the current hour's kWh
+                # First hour of the day: set total_kwh to the current hour's kWh
                 #logging.info(f"last hour = None")
                 asset_data[asset_id]['total_kwh'] = kwh
-                # Set daily_total_kwh to the current hour's kWh value (first hour of the day)
-                asset_data[asset_id]['daily_total_kwh'] = kwh
             else:
                 #logging.info(f"last hour != None")
                 # For subsequent hours, add the current hour's kWh to the total_kwh from the previous hour
                 asset_data[asset_id]['total_kwh'] += kwh
                 #logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
 
-                # For subsequent hours, add the current hour's kWh to the daily_total_kwh
-                asset_data[asset_id]['daily_total_kwh'] += kwh
-                #logging.info(f"Debugging: For asset ID: {asset_id} - Daily total kWh: {asset_data[asset_id]['daily_total_kwh']}")
-
-            # Fetch the last saved total_kwh and daily_total_kwh for the asset for the previous hour on the same day
+            # Fetch the last saved total_kwh for the asset for the previous hour on the same day
             cursor.execute('''
-                SELECT total_kwh, daily_total_kwh FROM daily_usage 
+                SELECT total_kwh FROM daily_usage 
                 WHERE asset_id = ? AND date = ? AND hour < ? 
                 ORDER BY hour DESC LIMIT 1
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
 
-            # Initialize total_kwh and daily_total_kwh based on previous records or start fresh if no record exists
+            # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
-                previous_total_kwh, previous_daily_total_kwh = previous_kwh_record
-                #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}, Daily Total kWh: {previous_daily_total_kwh}")
+                previous_total_kwh = previous_kwh_record
+                #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
             else:
                 previous_total_kwh = 0.0
-                previous_daily_total_kwh = 0.0
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
-            # Accumulate the current hour kWh to total_kwh and daily_total_kwh
+            # Accumulate the current hour kWh to total_kwh
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh']
-            daily_total_kwh = previous_daily_total_kwh + asset_data[asset_id]['current_hour_kwh']
  
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
             #logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
 
-            # Log or store the total_kwh and daily_total_kwh as needed
-            #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}, Daily Total kWh = {asset_data[asset_id]['daily_total_kwh']}")
+            # Log or store the total_kwh as needed
+            #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
@@ -525,9 +515,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
             kwh_charge = kwh * rate
             total_kwh_charges[asset_id] += kwh_charge
-
-            # Compute daily total kWh charge for all assets
-            daily_total_kwh_charge = daily_total_kwh * rate
         
         for asset_id in asset_data.keys():
             if asset_id in first_response_time_current_hour:
@@ -584,7 +571,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Retrieve current_hour_kwh for this asset
             asset_current_hour_kwh = asset_data[asset_id]['current_hour_kwh']
 
-            #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}, daily_total_kwh: {daily_total_kwh}")
+            #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}")
     
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
@@ -613,13 +600,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
                 logging.info(
                     f"Comparison results: {total_kwh_delta}, {total_kwh_charge_delta}, {total_kwh_co2e_delta}, "
-                    f"{daily_total_kwh_delta}, {daily_total_kwh_co2e_delta}, {daily_total_kwh_charge_delta}, "
                     f"{total_kwh_delta_percent}, {total_kwh_charge_delta_percent}, {total_kwh_co2e_delta_percent},"
                 )
             else:
                 # If no comparison results, set all deltas and percentages to 0
                 total_kwh_delta = total_kwh_charge_delta = total_kwh_co2e_delta = 0
-                daily_total_kwh_delta = daily_total_kwh_co2e_delta = daily_total_kwh_charge_delta = 0
                 total_kwh_delta_percent = total_kwh_charge_delta_percent = total_kwh_co2e_delta_percent = 0
 
                 logging.info("No benchmark entries found, using default values for deltas and percentages.")
