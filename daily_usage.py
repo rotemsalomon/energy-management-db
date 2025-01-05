@@ -657,7 +657,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
-        # Calculate daily metric values for the current date and hour
+        """# Calculate daily metric values for the current date and hour
         cursor.execute('''
             SELECT 
                 SUM(total_kwh) AS daily_total_kwh, 
@@ -686,7 +686,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Commit changes
             conn.commit()
-            logging.info("Daily metric values updated successfully for all asset entries.")
+            logging.info("Daily metric values updated successfully for all asset entries.")"""
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
