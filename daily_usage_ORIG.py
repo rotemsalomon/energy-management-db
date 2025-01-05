@@ -664,12 +664,14 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 INSERT INTO daily_usage (
                     asset_id, org_id, premise_id, asset_name, date, total_kwh, cnt_comp_on, cnt_comp_off, ave_comp_runtime, 
                     max_comp_runtime, min_comp_runtime, update_time, total_kwh_charge, hour, 
-                    percentage_change_kwh, current_hour_kwh, total_kwh_co2e, 
-                    current_hour_kwh_co2e, day_of_week,
+                    percentage_change_kwh, daily_total_kwh, current_hour_kwh, total_kwh_co2e, 
+                    daily_total_kwh_co2e, current_hour_kwh_co2e, daily_total_kwh_charge, day_of_week,
                     total_kwh_delta, total_kwh_charge_delta, total_kwh_co2e_delta,
-                    total_kwh_delta_percent, total_kwh_charge_delta_percent, total_kwh_co2e_delta_percent
+                    daily_total_kwh_delta, daily_total_kwh_co2e_delta, daily_total_kwh_charge_delta,
+                    total_kwh_delta_percent, total_kwh_charge_delta_percent, total_kwh_co2e_delta_percent,
+                    daily_total_kwh_delta_percent, daily_total_kwh_co2e_delta_percent, daily_total_kwh_charge_delta_percent
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(asset_id, date, hour) DO UPDATE SET
                     org_id = excluded.org_id,
                     premise_id = excluded.premise_id,
@@ -682,29 +684,41 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     update_time = excluded.update_time,
                     total_kwh_charge = excluded.total_kwh_charge,
                     percentage_change_kwh = excluded.percentage_change_kwh,
+                    daily_total_kwh = excluded.daily_total_kwh,
                     current_hour_kwh = excluded.current_hour_kwh,
                     total_kwh_co2e = excluded.total_kwh_co2e,
+                    daily_total_kwh_co2e = excluded.daily_total_kwh_co2e,
                     current_hour_kwh_co2e = excluded.current_hour_kwh_co2e,
+                    daily_total_kwh_charge = excluded.daily_total_kwh_charge,
                     day_of_week = excluded.day_of_week,
                     total_kwh_delta = excluded.total_kwh_delta,
                     total_kwh_charge_delta = excluded.total_kwh_charge_delta,
                     total_kwh_co2e_delta = excluded.total_kwh_co2e_delta,
+                    daily_total_kwh_delta = excluded.daily_total_kwh_delta,
+                    daily_total_kwh_co2e_delta = excluded.daily_total_kwh_co2e_delta,
+                    daily_total_kwh_charge_delta = excluded.daily_total_kwh_charge_delta,
                     total_kwh_delta_percent = excluded.total_kwh_delta_percent,
                     total_kwh_co2e_delta_percent = excluded.total_kwh_co2e_delta_percent,
-                    total_kwh_charge_delta_percent = excluded.total_kwh_charge_delta_percent
+                    total_kwh_charge_delta_percent = excluded.total_kwh_charge_delta_percent,
+                    daily_total_kwh_delta_percent = excluded.daily_total_kwh_delta_percent,
+                    daily_total_kwh_co2e_delta_percent = excluded.daily_total_kwh_co2e_delta_percent,
+                    daily_total_kwh_charge_delta_percent = excluded.daily_total_kwh_charge_delta_percent
             ''', (
                 asset_id, org_id, premise_id, asset_name, current_date, 
                 round(total_kwh, 2), cnt_comp_on, cnt_comp_off, 
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
                 current_time_str, round(total_kwh_charge, 2), hour, 
-                round(percentage_change_kwh, 2),
+                round(percentage_change_kwh, 2), round(daily_total_kwh, 2), 
                 round(asset_current_hour_kwh, 3), total_kwh_co2e, 
-                current_hour_kwh_co2e, 
-                day_of_week,
+                daily_total_kwh_co2e, current_hour_kwh_co2e, 
+                round(daily_total_kwh_charge, 2), day_of_week,
                 round(total_kwh_delta, 3), round(total_kwh_charge_delta, 3),
-                round(total_kwh_co2e_delta, 3),
+                round(total_kwh_co2e_delta, 3), round(daily_total_kwh_delta, 3),
+                round(daily_total_kwh_co2e_delta, 3), round(daily_total_kwh_charge_delta, 3),
                 round(total_kwh_delta_percent, 2), round(total_kwh_co2e_delta_percent, 2),
-                round(total_kwh_charge_delta_percent, 2)
+                round(total_kwh_charge_delta_percent, 2),
+                round(daily_total_kwh_delta_percent, 2), round(daily_total_kwh_co2e_delta_percent, 2),
+                round(daily_total_kwh_charge_delta_percent, 2)
             ))
             conn.commit()
 
