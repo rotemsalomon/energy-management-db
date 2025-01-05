@@ -478,6 +478,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Initialize total_kwh and daily_total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
+                previous_total_kwh = previous_kwh_record
                 #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}, Daily Total kWh: {previous_daily_total_kwh}")
             else:
                 previous_total_kwh = 0.0
