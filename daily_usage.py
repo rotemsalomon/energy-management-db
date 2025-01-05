@@ -647,7 +647,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     total_kwh_charge_delta_percent = excluded.total_kwh_charge_delta_percent
             ''', (
                 asset_id, org_id, premise_id, asset_name, current_date, 
-                (f"{round(total_kwh, 2):.2f}",), cnt_comp_on, cnt_comp_off, 
+                f"{round(total_kwh, 2):.2f}", cnt_comp_on, cnt_comp_off, 
                 ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
                 current_time_str, round(total_kwh_charge, 2), hour, 
                 round(percentage_change_kwh, 2),
