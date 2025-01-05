@@ -586,7 +586,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 'total_kwh_charge': total_kwh_charge
             }
             # Run the function and calculate values
-            comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
+            """comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
 
             # If comparison results exist, extract the delta values
             if comparison_results:
@@ -614,7 +614,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
-            logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
+            logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")"""
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
