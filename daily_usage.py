@@ -616,7 +616,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     total_kwh_delta, total_kwh_charge_delta, total_kwh_co2e_delta,
                     total_kwh_delta_percent, total_kwh_charge_delta_percent, total_kwh_co2e_delta_percent
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(asset_id, date, hour) DO UPDATE SET
                     org_id = excluded.org_id,
                     premise_id = excluded.premise_id,
