@@ -409,11 +409,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 # Reset for new hour
                 asset_data[asset_id]['current_hour_kwh'] = 0.0
                 asset_data[asset_id]['last_processed_hour'] = current_hour
-                #logging.info(f"Debugging: Date/ResponseTime != Current_date/time for Asset ID: {asset_id}. Resetting for new hour. The current hour value is: {current_hour_str}")
+                logging.info(f"Debugging: Date/ResponseTime != Current_date/time for Asset ID: {asset_id}. Resetting for new hour. The current hour value is: {current_hour_str}")
 
                 # Set the first response time for the new hour
                 asset_data[asset_id]['response_time_count'] = 1  # Initialize count for the new hour
-                #logging.info(f"Debugging: First response time set for asset {asset_id} at {response_time}. Reset response_time_count to 1.")
+                logging.info(f"Debugging: First response time set for asset {asset_id} at {response_time}. Reset response_time_count to 1.")
             else:
                 # Still in the same hour, increment response time count
                 asset_data[asset_id]['response_time_count'] += 1           
@@ -426,13 +426,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
-                #logging.info(f"Date/ResponseTime = Current_date/time for Asset ID: {asset_id}")
+                logging.info(f"Date/ResponseTime = Current_date/time for Asset ID: {asset_id}")
                 
                 # Now record first and the last response time for the current hour
                 if asset_id not in first_response_time_current_hour:
                     first_response_time_current_hour[asset_id] = response_time  # Reset first response time
                 last_response_time_current_hour[asset_id] = response_time
-                #logging.info(f"Debugging: Date/ResponseTime = Current_date/time for asset {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")            
+                logging.info(f"Debugging: Date/ResponseTime = Current_date/time for asset {asset_id}, First Response Time for current hour: {first_response_time_current_hour[asset_id]}, Last Response Time for current hour: {last_response_time_current_hour[asset_id]}, Response Time Count: {asset_data[asset_id]['response_time_count']}")            
 
             # Cumulative kWh usage for this asset.
             #asset_data[asset_id]['total_kwh'] += kwh # Add kwh (above) to the current asset_id total_kwh value.
@@ -576,7 +576,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             
-            # Prepare data to pass to benchmark delta function
+            """# Prepare data to pass to benchmark delta function
             current_data = {
                 'day_of_week': day_of_week,
                 'hour': f"{str(current_hour).zfill(2)}:00",  # Use current_hour directly
@@ -586,7 +586,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 'total_kwh_charge': total_kwh_charge
             }
             # Run the function and calculate values
-            """comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
+            comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
 
             # If comparison results exist, extract the delta values
             if comparison_results:
