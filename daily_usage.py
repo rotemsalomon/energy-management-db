@@ -135,7 +135,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
 
     # Query to get benchmark entries for the given asset_id, day_of_week, and hour
     query = '''
-    SELECT total_kwh, total_kwh_co2e, total_kwh_charge, daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge
+    SELECT total_kwh, total_kwh_co2e, total_kwh_charge
     FROM daily_usage
     WHERE asset_id = ? AND is_benchmark = 1 AND day_of_week = ? AND hour = ?
     '''
@@ -162,16 +162,12 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         return None
 
     # Unpack benchmark values
-    (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge,
-     benchmark_daily_total_kwh, benchmark_daily_total_kwh_co2e, benchmark_daily_total_kwh_charge) = benchmark_values
+    (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge) = benchmark_values
 
     # Calculate deltas
     total_kwh_delta = current_data['total_kwh'] - benchmark_total_kwh
     total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
     total_kwh_charge_delta = current_data['total_kwh_charge'] - benchmark_total_kwh_charge
-    daily_total_kwh_delta = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
-    daily_total_kwh_co2e_delta = current_data['daily_total_kwh_co2e'] - benchmark_daily_total_kwh_co2e
-    daily_total_kwh_charge_delta = current_data['daily_total_kwh_charge'] - benchmark_daily_total_kwh_charge
 
     # Calculate delta percentages
     def calculate_percentage(delta, benchmark):
@@ -180,9 +176,6 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     total_kwh_delta_percent = calculate_percentage(total_kwh_delta, benchmark_total_kwh)
     total_kwh_co2e_delta_percent = calculate_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
     total_kwh_charge_delta_percent = calculate_percentage(total_kwh_charge_delta, benchmark_total_kwh_charge)
-    daily_total_kwh_delta_percent = calculate_percentage(daily_total_kwh_delta, benchmark_daily_total_kwh)
-    daily_total_kwh_co2e_delta_percent = calculate_percentage(daily_total_kwh_co2e_delta, benchmark_daily_total_kwh_co2e)
-    daily_total_kwh_charge_delta_percent = calculate_percentage(daily_total_kwh_charge_delta, benchmark_daily_total_kwh_charge)
 
     # Log comparison results
     logging.info(f"Comparison results for asset_id {asset_id}: "
@@ -198,13 +191,7 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         'total_kwh_co2e_delta': total_kwh_co2e_delta,
         'total_kwh_delta_percent': total_kwh_delta_percent,
         'total_kwh_charge_delta_percent': total_kwh_charge_delta_percent,
-        'total_kwh_co2e_delta_percent': total_kwh_co2e_delta_percent,
-        'daily_total_kwh_delta': daily_total_kwh_delta,
-        'daily_total_kwh_co2e_delta': daily_total_kwh_co2e_delta,
-        'daily_total_kwh_charge_delta': daily_total_kwh_charge_delta,
-        'daily_total_kwh_delta_percent': daily_total_kwh_delta_percent,
-        'daily_total_kwh_co2e_delta_percent': daily_total_kwh_co2e_delta_percent,
-        'daily_total_kwh_charge_delta_percent': daily_total_kwh_charge_delta_percent
+        'total_kwh_co2e_delta_percent': total_kwh_co2e_delta_percent
     }
 
 def get_missing_hours(cursor):
