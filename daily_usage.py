@@ -606,6 +606,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
+            logging.debug("Executing query with values: %s", (asset_id, org_id, premise_id, asset_name, current_date, 
+                round(total_kwh, 2), cnt_comp_on, cnt_comp_off, ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
+                current_time_str, round(total_kwh_charge, 2), hour, round(percentage_change_kwh, 2),
+                round(asset_current_hour_kwh, 3), total_kwh_co2e, current_hour_kwh_co2e, day_of_week,
+                round(total_kwh_delta, 3), round(total_kwh_charge_delta, 3), round(total_kwh_co2e_delta, 3),
+                round(total_kwh_delta_percent, 2), round(total_kwh_co2e_delta_percent, 2), round(total_kwh_charge_delta_percent, 2)))
+
             # Insert or update the record in daily_usage (consolidated with daily saving entries)
             cursor.execute('''
                 INSERT INTO daily_usage (
@@ -654,13 +661,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 round(total_kwh_charge_delta_percent, 2)
             ))
             conn.commit()
-
-            logging.debug("Executing query with values: %s", (asset_id, org_id, premise_id, asset_name, current_date, 
-                round(total_kwh, 2), cnt_comp_on, cnt_comp_off, ave_comp_runtime_str, max_comp_runtime_str, min_comp_runtime_str, 
-                current_time_str, round(total_kwh_charge, 2), hour, round(percentage_change_kwh, 2),
-                round(asset_current_hour_kwh, 3), total_kwh_co2e, current_hour_kwh_co2e, day_of_week,
-                round(total_kwh_delta, 3), round(total_kwh_charge_delta, 3), round(total_kwh_co2e_delta, 3),
-                round(total_kwh_delta_percent, 2), round(total_kwh_co2e_delta_percent, 2), round(total_kwh_charge_delta_percent, 2)))
 
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
