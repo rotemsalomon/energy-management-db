@@ -421,8 +421,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Ensure response_time is a datetime object, and current_date is a date object
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
+                logging.info(f"Debugging: Response time is: {response_time}")
             if isinstance(current_date, str):
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
+                logging.info(f"Debugging: Current date is: {current_date}")
+
 
             if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
