@@ -614,6 +614,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             ## Formatting results prior to writing to database
             total_kwh_2d = f"{round(total_kwh, 2):.2f}"
+            logging.info(f"2 decimal total kwh: {total_kwh_2d}")
 
 
             # Insert or update the record in daily_usage (consolidated with daily saving entries)
