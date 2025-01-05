@@ -720,7 +720,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 SUM(total_kwh_charge) AS daily_total_kwh_charge
             FROM daily_usage
             WHERE date = ? AND hour = ?
-        ''', (current_date, hour)
+        ''', (current_date, f"{str(current_hour).zfill(2)}:00"))
 
         # Fetch results
         results = cursor.fetchone()
@@ -737,7 +737,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     daily_total_kwh_co2e = ?,
                     daily_total_kwh_charge = ?
                 WHERE date = ? AND hour = ?
-            ''', (daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, current_date, hour)
+            ''', (daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, current_date, f"{str(current_hour).zfill(2)}:00"))
 
             # Commit changes
             conn.commit()
