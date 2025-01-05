@@ -38,28 +38,23 @@ sqlite> .schema tasmota_energy_data
 SQL Views:
 Create a view that list of an organisation's premises and assets
 Source tables: org_info, prem_info, asset_info
-        ## View name: 
-            ## vInventory_list
-        ## Columns:
-            ## org_id
-            ## org_name
-            ## premise_id
-            ## premise_name
-            ## asset_id
-            ## asset_name
-        Sqlite query:
-            CREATE VIEW vInventory_list AS
-               SELECT DISTINCT
-                org_info.org_id,
-                org_info.org_name,
-                prem_info.premise_id,
-                prem_info.premise_name,
-                asset_info.asset_id,
-                asset_info.name AS asset_name
-               FROM 
-                org_info
-               INNER JOIN prem_info ON prem_info.org_id = org_info.org_id
-               INNER JOIN asset_info ON asset_info.premise_id = prem_info.premise_id;  
+
+DROP VIEW IF EXISTS vDeployment;
+
+CREATE VIEW vDeployment AS
+SELECT
+    oi.org_id,
+    oi.org_name,
+    pi.premise_id,
+    pi.premise_name,
+    ai.asset_id,
+    ai.name AS asset_name
+FROM
+    org_info oi
+JOIN
+    prem_info pi ON oi.org_id = pi.org_id
+LEFT JOIN
+    asset_info ai ON ai.org_id = pi.org_id AND ai.premise_id = pi.premise_id;
 
 Create a view that list a count of an organisation's premises and assets
 Source tables: inventory_view
@@ -157,4 +152,3 @@ WHERE response_time >= '2024-09-30 03:00:00'
   AND response_time < '2024-09-30 03:59:59'
 GROUP BY asset_id, asset_name
 ORDER BY response_time;
-
