@@ -284,7 +284,9 @@ def get_missing_hours(cursor):
 
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
+    conn.row_factory = sqlite3.Row  # Enable named access
     cursor = conn.cursor()
+
     try:
         # Get missing hours and associated data
         missing_hours, update_time, current_date = get_missing_hours(cursor)
