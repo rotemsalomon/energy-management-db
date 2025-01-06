@@ -551,7 +551,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
 
             # Log or store the total_kwh  as needed
-            logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
+            #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
@@ -625,7 +625,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             yesterday_record = cursor.fetchone()
             # assign if value exists. Other value of 0.0 is assigned.
             yesterday_kwh = yesterday_record[0] if yesterday_record else 0.0
-            logging.info(f"Asset ID: {asset_id} yesterday kwh usage: {yesterday_kwh}")
+            logging.info(f"Asset ID: {asset_id} yesterday total_kwh usage: {yesterday_kwh}")
             # Calculate percentage change_kwh. Again. total_kwh reflects that cummulative kwh usage
             # for an asset for the current day.
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
@@ -674,6 +674,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
+            logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
 
             logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
 
