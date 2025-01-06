@@ -178,6 +178,7 @@ def compare_asset_with_benchmark(cursor, asset_id, current_data):
     total_kwh_delta = benchmark_total_kwh - current_data['total_kwh']
     total_kwh_co2e_delta = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
     total_kwh_charge_delta = benchmark_total_kwh_charge - current_data['total_kwh_charge']
+    logging.info(f"{benchmark_total_kwh_charge} - {current_data['total_kwh_charge']} = {total_kwh_charge_delta}")
 
     total_kwh_delta_percent = calculate_benchmark_percentage(total_kwh_delta, benchmark_total_kwh)
     total_kwh_co2e_delta_percent = calculate_benchmark_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
