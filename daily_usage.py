@@ -527,7 +527,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['total_kwh'] += kwh
                 #logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
 
-            logging.info(f"######### Debugging: Looking previous recod for hour: {current_hour_str} for asset ID: {asset_id}")
             # Fetch the last saved total_kwh for the asset for the previous hour on the same day
             cursor.execute('''
                 SELECT total_kwh FROM daily_usage 
@@ -680,7 +679,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             logging.info(f"Previous record exists: Asset ID {asset_id} - Hour {current_hour}: Total kWh: {previous_total_kwh}")
             logging.info('############# Asset ID %s - Hour %s: Previous kwh record: %s', asset_id, current_hour, dict(previous_kwh_record) if previous_kwh_record else None)
             logging.info(f"############# Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
-
+            logging.info(f"######### Debugging: Looking previous recod for hour: {current_hour_str} for asset ID: {asset_id}")
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
