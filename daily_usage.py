@@ -634,6 +634,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             
             # Retrieve current_hour_kwh for this asset
             asset_current_hour_kwh = asset_data[asset_id]['current_hour_kwh']
+            logging.info(f"{asset_id}: The currenthour_kwh is: {asset_current_hour_kwh}")
+
 
             #logging.info(f"{asset_id}: Calculating CO2 emissions for total_kwh: {total_kwh}, current_hour_kwh: {asset_current_hour_kwh}")
     
