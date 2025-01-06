@@ -751,7 +751,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             daily_total_kwh_co2e = results['daily_total_kwh_co2e']
             daily_total_kwh_charge = results['daily_total_kwh_charge']
 
-                # Prepare data to pass to daily_benchmark delta function
+            # Prepare data to pass to daily_benchmark delta function
             current_daily_data = {
                 'day_of_week': day_of_week,
                 'hour': f"{str(current_hour).zfill(2)}:00",  # Use current_hour directly
@@ -783,6 +783,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 logging.info("No benchmark entries found, using default values for deltas and percentages.")
 
             # Update the `daily_usage` table with the calculated values
+            logging.info(f"Current data for update: date={current_data['date']}, hour={current_data['hour']}")
             cursor.execute('''
                 UPDATE daily_usage
                 SET 
@@ -810,11 +811,17 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 f"{str(current_data['hour']).zfill(2)}:00"
             ))
 
+            # Log the number of rows updated
+            rows_updated = cursor.rowcount
+            logging.info(f"Rows updated: {rows_updated}")
+
             # Commit the changes to the database
             conn.commit()
+           
+            if rows_updated == 0:
+                logging.warning(f"No rows were updated for date={current_data['date']} and hour={current_data['hour']}. Check input values.")
 
             logging.info(f"Updated daily_usage table for {current_data['date']} at {current_data['hour']} with daily totals and deltas.")
-
 
     except Exception as e:
         logging.error(f"Query execution failed for {asset_id}: {str(e)}")
