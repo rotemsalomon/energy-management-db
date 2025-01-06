@@ -536,6 +536,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
+            logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
 
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
@@ -548,6 +549,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Accumulate the current hour kWh to total_kwh
             logging.info(f"################# Calculating total_kwh: Previous total_kwh = {previous_total_kwh}, Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh'] 
+            # Update the total_kwh in asset_data
+            asset_data[asset_id]['total_kwh'] = total_kwh
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
             #logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
