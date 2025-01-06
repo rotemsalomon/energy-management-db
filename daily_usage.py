@@ -808,7 +808,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 round(daily_total_kwh_charge_delta_percent, 2),
                 round(daily_total_kwh_co2e_delta_percent, 2),
                 current_data['date'],
-                f"{str(current_data['hour']).zfill(2)}:00"
+                current_data['hour']
             ))
 
             # Log the number of rows updated
