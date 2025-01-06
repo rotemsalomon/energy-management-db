@@ -296,7 +296,7 @@ def get_missing_hours(cursor):
 
         # Query to get hours for the current day from the daily_usage table
         query = '''
-        SELECT hour, update_time
+        SELECT hour
         FROM daily_usage
         WHERE date = ?
         '''
@@ -306,15 +306,12 @@ def get_missing_hours(cursor):
         else:
             cursor.execute(query, (current_date,))
 
-        update_time = None  # Initialize update_time
         recorded_hours = set()
             
         for row in cursor.fetchall():
-            hour_value, update_time_str = row  # Fetch hour and update_time as string
+            hour_value = row  # Fetch hour and update_time as string
 
             try:
-                # Convert response_time_str to a datetime object
-                update_time = datetime.strptime(update_time_str, '%Y-%m-%d %H:%M:%S')
                 
                 # Check if hour is a string and convert it to an integer
                 if isinstance(hour_value, str) and ':' in hour_value:
@@ -371,26 +368,9 @@ def calculate_daily_consumption_by_asset(db_file):
             # When done processing missing hours, set current_hour to current hour.
             current_hour = datetime.now().hour
             logging.info(f"Completed processing all missing hours. Setting current hour to: {current_hour}")
-
-            # When done processing missing hours, set current_hour to update_time.
-            # update_time: The last recorded hour the script processed successfully.
-            #if update_time:  # Check if update_time is valid
-            #    current_hour = update_time
-            #    logging.info(f"Completed processing all missing hours. Setting current hour to: {current_hour}")
-            #else:
-            #    logging.warning("No valid response_time found.")
         
         else:
             # If no missing hours where discovered (ie The above if statememnt was not invoked), 
-            # Set current_hour to update_time
-            #if update_time:  # Check if response_time is valid
-            #    current_hour = update_time
-            #    logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
-
-            #else:
-            #    logging.warning("No valid response_time found.")
-            #    current_hour = None  # Or handle as appropriate
-
             current_hour = datetime.now().hour
             logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
             
