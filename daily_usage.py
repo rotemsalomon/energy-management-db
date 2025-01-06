@@ -494,7 +494,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
             if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
-                logging.info(f"################# Asset ID {asset_id} - Hour {current_hour}: Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
+                #logging.info(f"################# Asset ID {asset_id} - Hour {current_hour}: Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
                 #logging.info(f"Date/ResponseTime = Current_date/time for Asset ID: {asset_id}")
                 
@@ -536,7 +536,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
-            logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
+            #logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
 
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
@@ -547,7 +547,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
             # Accumulate the current hour kWh to total_kwh
-            logging.info(f"################# Calculating total_kwh: Previous total_kwh = {previous_total_kwh}, Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
+            #logging.info(f"################# Calculating total_kwh: Previous total_kwh = {previous_total_kwh}, Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh'] 
             # Update the total_kwh in asset_data
             asset_data[asset_id]['total_kwh'] = total_kwh
