@@ -535,6 +535,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
+            logging.info(f'Previous kwh record: {previous_kwh_record}')
 
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
@@ -625,7 +626,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             yesterday_record = cursor.fetchone()
             # assign if value exists. Other value of 0.0 is assigned.
             yesterday_kwh = yesterday_record[0] if yesterday_record else 0.0
-            logging.info(f"Asset ID: {asset_id} yesterday total_kwh usage: {yesterday_kwh}")
+            #logging.info(f"Asset ID: {asset_id} yesterday total_kwh usage: {yesterday_kwh}")
             # Calculate percentage change_kwh. Again. total_kwh reflects that cummulative kwh usage
             # for an asset for the current day.
             # yesterday_kwh value is retrieved from the db, by looking for the 1st record for the same hour
