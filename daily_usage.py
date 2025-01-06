@@ -494,6 +494,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 current_date = datetime.strptime(current_date, '%Y-%m-%d').date()
 
             if response_time.date() == current_date and current_hour == response_time.hour: # If the date and hour in the response_time field of the record being processed = the current_date and current_hour value
+                logging.info(f"################# Asset ID {asset_id} - Hour {current_hour}: Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
                 asset_data[asset_id]['current_hour_kwh'] += kwh # Add kwh to usage
                 #logging.info(f"Date/ResponseTime = Current_date/time for Asset ID: {asset_id}")
                 
@@ -545,6 +546,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
             # Accumulate the current hour kWh to total_kwh
+            logging.info(f"################# Calculating total_kwh: Previous total_kwh = {previous_total_kwh}, Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh'] 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
@@ -676,10 +678,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"######### Debugging: Looking previous recod for hour: {current_hour_str} for asset ID: {asset_id}")
-            logging.info('############# Asset ID %s - Hour %s: Previous kwh record: %s', asset_id, current_hour, dict(previous_kwh_record) if previous_kwh_record else None)
-            logging.info(f"############ Previous record exists: Asset ID {asset_id} - Hour {current_hour}: Total kWh: {previous_total_kwh}")
-            logging.info(f"############# Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
+
+            # Log the value to be written to the database
+            logging.info(f"################# Writing to DB: Asset ID {asset_id} - Hour {current_hour}: Total kWh = {total_kwh}")
+
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
 
