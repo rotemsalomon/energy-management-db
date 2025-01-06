@@ -174,9 +174,12 @@ def compare_asset_with_benchmark(cursor, asset_id, current_data):
     # Unpack benchmark values
     (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge) = benchmark_values
 
-    # Compute deltas (positive result means more savings, negative result means less savings)
-    total_kwh_delta = benchmark_total_kwh - current_data['total_kwh']
-    total_kwh_co2e_delta = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
+    # Compute deltas
+    ## Usage: positive result means more usage, negative result means less usage
+    ## CO2e (Offset): Negative result means less emissions, positve result means more emissions
+    ## Charge (Spend): Positive result means more savings, negative result means less savings
+    total_kwh_delta = current_data['total_kwh'] - benchmark_total_kwh
+    total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
     total_kwh_charge_delta = benchmark_total_kwh_charge - current_data['total_kwh_charge']
     logging.info(f"total_kwh_delta: {benchmark_total_kwh} - {current_data['total_kwh']} = {total_kwh_delta}")
     logging.info(f"total_kwh_co2e_delta: {benchmark_total_kwh_co2e} - {current_data['total_kwh_co2e']} = {total_kwh_co2e_delta}")
@@ -242,8 +245,11 @@ def compare_daily_with_benchmark(cursor, current_data):
 
     benchmark_daily_total_kwh, benchmark_daily_total_kwh_co2e, benchmark_daily_total_kwh_charge = benchmark_values
 
-    # Compute deltas (positive result means more savings, negative result means less savings)
-    daily_total_kwh_delta = benchmark_daily_total_kwh - current_data['daily_total_kwh']
+    # Compute deltas
+    ## Usage: positive result means more usage, negative result means less usage
+    ## CO2e (Offset): Negative result means less emissions, positve result means more emissions
+    ## Charge (Spend): Positive result means more savings, negative result means less savings
+    daily_total_kwh_delta = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
     daily_total_kwh_co2e_delta = benchmark_daily_total_kwh_co2e - current_data['daily_total_kwh_co2e']
     daily_total_kwh_charge_delta = benchmark_daily_total_kwh_charge - current_data['daily_total_kwh_charge']
 
@@ -335,9 +341,9 @@ def get_missing_hours(cursor):
         
         # Return missing hours, the last update_time, and the current or previous date
         if current_hour == 0:
-            return missing_hours, update_time, previous_date
+            return missing_hours, previous_date
         else:
-            return missing_hours, update_time, current_date
+            return missing_hours, current_date
             
     except Exception as e:
         logging.error(f"An error occurred: {e}")
@@ -351,7 +357,7 @@ def calculate_daily_consumption_by_asset(db_file):
 
     try:
         # Get missing hours and associated data
-        missing_hours, update_time, current_date = get_missing_hours(cursor)
+        missing_hours, current_date = get_missing_hours(cursor)
 
         if missing_hours:
             for current_hour in missing_hours:
@@ -361,25 +367,32 @@ def calculate_daily_consumption_by_asset(db_file):
                 #formatted_hour = f"{str(current_hour).zfill(2)}:00"
                 #logging.info(f"Processing metrics for missing hour: {formatted_hour}")
                 process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, current_date)  # Pass current_hour and current_date directly
+            
+            # When done processing missing hours, set current_hour to current hour.
+            current_hour = datetime.now().hour
+            logging.info(f"Completed processing all missing hours. Setting current hour to: {current_hour}")
 
             # When done processing missing hours, set current_hour to update_time.
             # update_time: The last recorded hour the script processed successfully.
-            if update_time:  # Check if update_time is valid
-                current_hour = update_time
-                logging.info(f"Completed processing all missing hours. Setting current hour to: {current_hour}")
-            else:
-                logging.warning("No valid response_time found.")
+            #if update_time:  # Check if update_time is valid
+            #    current_hour = update_time
+            #    logging.info(f"Completed processing all missing hours. Setting current hour to: {current_hour}")
+            #else:
+            #    logging.warning("No valid response_time found.")
         
         else:
             # If no missing hours where discovered (ie The above if statememnt was not invoked), 
             # Set current_hour to update_time
-            if update_time:  # Check if response_time is valid
-                current_hour = update_time
-                logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
+            #if update_time:  # Check if response_time is valid
+            #    current_hour = update_time
+            #    logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
 
-            else:
-                logging.warning("No valid response_time found.")
-                current_hour = None  # Or handle as appropriate
+            #else:
+            #    logging.warning("No valid response_time found.")
+            #    current_hour = None  # Or handle as appropriate
+
+            current_hour = datetime.now().hour
+            logging.info(f"No missing hours detected. Setting current hour to: {current_hour}")
             
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
