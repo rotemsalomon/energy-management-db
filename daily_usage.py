@@ -174,10 +174,10 @@ def compare_asset_with_benchmark(cursor, asset_id, current_data):
     # Unpack benchmark values
     (benchmark_total_kwh, benchmark_total_kwh_co2e, benchmark_total_kwh_charge) = benchmark_values
 
-    # Calculate deltas
-    total_kwh_delta = current_data['total_kwh'] - benchmark_total_kwh
-    total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
-    total_kwh_charge_delta = current_data['total_kwh_charge'] - benchmark_total_kwh_charge
+    # Compute deltas (positive result means more savings, negative result means less savings)
+    total_kwh_delta = benchmark_total_kwh - current_data['total_kwh']
+    total_kwh_co2e_delta = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
+    total_kwh_charge_delta = benchmark_total_kwh_charge - current_data['total_kwh_charge']
 
     total_kwh_delta_percent = calculate_benchmark_percentage(total_kwh_delta, benchmark_total_kwh)
     total_kwh_co2e_delta_percent = calculate_benchmark_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
@@ -239,10 +239,10 @@ def compare_daily_with_benchmark(cursor, current_data):
 
     benchmark_daily_total_kwh, benchmark_daily_total_kwh_co2e, benchmark_daily_total_kwh_charge = benchmark_values
 
-    # Compute deltas
-    daily_total_kwh_delta = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
-    daily_total_kwh_co2e_delta = current_data['daily_total_kwh_co2e'] - benchmark_daily_total_kwh_co2e
-    daily_total_kwh_charge_delta = current_data['daily_total_kwh_charge'] - benchmark_daily_total_kwh_charge
+    # Compute deltas (positive result means more savings, negative result means less savings)
+    daily_total_kwh_delta = benchmark_daily_total_kwh - current_data['daily_total_kwh']
+    daily_total_kwh_co2e_delta = benchmark_daily_total_kwh_co2e - current_data['daily_total_kwh_co2e']
+    daily_total_kwh_charge_delta = benchmark_daily_total_kwh_charge - current_data['daily_total_kwh_charge']
 
     daily_total_kwh_delta_percent = calculate_benchmark_percentage(daily_total_kwh_delta, benchmark_daily_total_kwh)
     daily_total_kwh_co2e_delta_percent = calculate_benchmark_percentage(daily_total_kwh_co2e_delta, benchmark_daily_total_kwh_co2e)
