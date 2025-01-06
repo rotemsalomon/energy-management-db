@@ -19,6 +19,24 @@ EF3 = 0.09  # Scope 3 emission factor
 # Database file path
 db_file = '/root/projects/tasmota/sqlite3_db/tasmota_data.db'
 
+def ensure_real(value):
+    """
+    Converts a value to a float, returning None if the conversion fails.
+    """
+    try:
+        return float(value)
+    except (ValueError, TypeError):
+        logging.error(f"Failed to convert value to REAL: {value}")
+        return None
+
+
+def calculate_benchmark_percentage(delta, benchmark):
+    """
+    Calculates the percentage change between delta and benchmark.
+    Returns 0 if the benchmark is 0 to avoid division errors.
+    """
+    return round((delta / benchmark) * 100, 2) if benchmark != 0 else 0
+
 def calculate_percentage_change_kwh(today_kwh, yesterday_kwh):
     """ Calculate the percentage change between today and yesterday's kWh usage. """
     if yesterday_kwh == 0:
@@ -127,7 +145,7 @@ def get_rate_for_response_time(cursor, response_time_str, asset_id):
 
     return applicable_rate if applicable_rate else 0
 
-def compare_with_benchmark(cursor, asset_id, current_data):
+def compare_asset_with_benchmark(cursor, asset_id, current_data):
     # If running between 00:00 and 00:59, adjust the date and hour to handle the previous day
     if current_data['hour'] == 0:
         current_data['date'] = (current_data['date'] - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -147,14 +165,6 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         logging.info(f"No benchmark entries for asset_id {asset_id}, skipping comparison.")
         return None
 
-    # Helper function to ensure value is REAL
-    def ensure_real(value):
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            logging.error(f"Failed to convert value to REAL: {value}")
-            return None
-
     # Unpack and convert benchmark values
     benchmark_values = list(map(ensure_real, benchmark_entry))
     if None in benchmark_values:
@@ -169,13 +179,9 @@ def compare_with_benchmark(cursor, asset_id, current_data):
     total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
     total_kwh_charge_delta = current_data['total_kwh_charge'] - benchmark_total_kwh_charge
 
-    # Calculate delta percentages
-    def calculate_percentage(delta, benchmark):
-        return round((delta / benchmark) * 100, 2) if benchmark != 0 else 0
-
-    total_kwh_delta_percent = calculate_percentage(total_kwh_delta, benchmark_total_kwh)
-    total_kwh_co2e_delta_percent = calculate_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
-    total_kwh_charge_delta_percent = calculate_percentage(total_kwh_charge_delta, benchmark_total_kwh_charge)
+    total_kwh_delta_percent = calculate_benchmark_percentage(total_kwh_delta, benchmark_total_kwh)
+    total_kwh_co2e_delta_percent = calculate_benchmark_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
+    total_kwh_charge_delta_percent = calculate_benchmark_percentage(total_kwh_charge_delta, benchmark_total_kwh_charge)
 
     # Log comparison results
     logging.info(f"Comparison results for asset_id {asset_id}: "
@@ -192,6 +198,72 @@ def compare_with_benchmark(cursor, asset_id, current_data):
         'total_kwh_delta_percent': total_kwh_delta_percent,
         'total_kwh_charge_delta_percent': total_kwh_charge_delta_percent,
         'total_kwh_co2e_delta_percent': total_kwh_co2e_delta_percent,
+    }
+
+def compare_daily_with_benchmark(cursor, current_data):
+    """
+    Computes daily metrics and their deltas against benchmark values for a specific date and hour.
+    Note: This function does not rely on `asset_id` as all daily values are the same for a date/hour.
+
+    Args:
+        cursor: Database cursor for executing queries.
+        current_data: A dictionary containing 'date', 'hour', 'day_of_week',
+                      'daily_total_kwh', 'daily_total_kwh_co2e', and 'daily_total_kwh_charge'.
+
+    Returns:
+        A dictionary containing the daily metrics and deltas, or None if benchmark data is not found.
+    """
+    # Adjust date and hour for the previous day if running during the first hour of the day
+    if current_data['hour'] == 0:
+        current_data['date'] = (current_data['date'] - timedelta(days=1)).strftime('%Y-%m-%d')
+        current_data['hour'] = f"{str(23).zfill(2)}:00"
+
+    # Query to get benchmark values (no longer relying on asset_id)
+    query = '''
+    SELECT daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge
+    FROM daily_usage
+    WHERE is_benchmark = 1 AND day_of_week = ? AND hour = ?
+    '''
+    cursor.execute(query, (current_data['day_of_week'], current_data['hour']))
+    benchmark_entry = cursor.fetchone()
+
+    if not benchmark_entry:
+        logging.info("No benchmark entries found for the specified day_of_week and hour, skipping delta computation.")
+        return None
+
+    # Process benchmark values
+    benchmark_values = list(map(ensure_real, benchmark_entry))
+    if None in benchmark_values:
+        logging.error(f"Skipping due to invalid benchmark values: {benchmark_entry}")
+        return None
+
+    benchmark_daily_total_kwh, benchmark_daily_total_kwh_co2e, benchmark_daily_total_kwh_charge = benchmark_values
+
+    # Compute deltas
+    daily_total_kwh_delta = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
+    daily_total_kwh_co2e_delta = current_data['daily_total_kwh_co2e'] - benchmark_daily_total_kwh_co2e
+    daily_total_kwh_charge_delta = current_data['daily_total_kwh_charge'] - benchmark_daily_total_kwh_charge
+
+    daily_total_kwh_delta_percent = calculate_benchmark_percentage(daily_total_kwh_delta, benchmark_daily_total_kwh)
+    daily_total_kwh_co2e_delta_percent = calculate_benchmark_percentage(daily_total_kwh_co2e_delta, benchmark_daily_total_kwh_co2e)
+    daily_total_kwh_charge_delta_percent = calculate_benchmark_percentage(daily_total_kwh_charge_delta, benchmark_daily_total_kwh_charge)
+
+    # Log computation results
+    logging.info(f"Computed daily metrics are: "
+                 f"KWH Delta: {daily_total_kwh_delta}, CO2e Delta: {daily_total_kwh_co2e_delta}, "
+                 f"Charge Delta: {daily_total_kwh_charge_delta}, "
+                 f"KWH Delta %: {daily_total_kwh_delta_percent}, "
+                 f"CO2e Delta %: {daily_total_kwh_co2e_delta_percent}, "
+                 f"Charge Delta %: {daily_total_kwh_charge_delta_percent}.")
+
+    # Return results as a dictionary
+    return {
+        'daily_total_kwh_delta': daily_total_kwh_delta,
+        'daily_total_kwh_co2e_delta': daily_total_kwh_co2e_delta,
+        'daily_total_kwh_charge_delta': daily_total_kwh_charge_delta,
+        'daily_total_kwh_delta_percent': daily_total_kwh_delta_percent,
+        'daily_total_kwh_co2e_delta_percent': daily_total_kwh_co2e_delta_percent,
+        'daily_total_kwh_charge_delta_percent': daily_total_kwh_charge_delta_percent,
     }
 
 def get_missing_hours(cursor):
@@ -572,7 +644,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             total_kwh_co2e = calculate_co2e_emission(total_kwh)
             current_hour_kwh_co2e = calculate_co2e_emission(asset_current_hour_kwh)
             
-            # Prepare data to pass to benchmark delta function
+            # Prepare data to pass to asset_benchmark delta function
             current_data = {
                 'day_of_week': day_of_week,
                 'hour': f"{str(current_hour).zfill(2)}:00",  # Use current_hour directly
@@ -582,7 +654,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 'total_kwh_charge': total_kwh_charge
             }
             # Run the function and calculate values
-            comparison_results = compare_with_benchmark(cursor, asset_id, current_data)
+            comparison_results = compare_asset_with_benchmark(cursor, asset_id, current_data)
 
             # If comparison results exist, extract the delta values
             if comparison_results:
@@ -606,7 +678,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            #logging.info(f"daily_total_kwh_co2e: {daily_total_kwh_co2e} {'grams' if daily_total_kwh_co2e < 500 else 'tonnes'}")
 
             logging.info(f"The total_kwh for {asset_id} for {current_hour} is {total_kwh}")
 
@@ -663,7 +734,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
         logging.info("Daily consumption and benchmark stats updated successfully.")
 
-                # Calculate daily metric values for the current date and hour
+        # Calculate daily metric values for the current date and hour
         cursor.execute('''
             SELECT 
                 SUM(total_kwh) AS daily_total_kwh, 
@@ -680,19 +751,70 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             daily_total_kwh_co2e = results['daily_total_kwh_co2e']
             daily_total_kwh_charge = results['daily_total_kwh_charge']
 
-            # Update all rows for the current date and hour with the daily totals
+                # Prepare data to pass to daily_benchmark delta function
+            current_daily_data = {
+                'day_of_week': day_of_week,
+                'hour': f"{str(current_hour).zfill(2)}:00",  # Use current_hour directly
+                'date': current_date,
+                'daily_total_kwh': daily_total_kwh,
+                'daily_total_kwh_co2e': daily_total_kwh_co2e,
+                'daily_total_kwh_charge': daily_total_kwh_charge
+            }
+
+            comparison_daily_results = compare_daily_with_benchmark(cursor, current_daily_data)
+
+            # If comparison results exist, extract the delta values
+            if comparison_results:
+                daily_total_kwh_delta = comparison_daily_results['daily_total_kwh_delta']
+                daily_total_kwh_charge_delta = comparison_daily_results['daily_total_kwh_charge_delta']
+                daily_total_kwh_co2e_delta = comparison_daily_results['daily_total_kwh_co2e_delta']
+
+                daily_total_kwh_delta_percent = comparison_daily_results['daily_total_kwh_delta_percent']
+                daily_total_kwh_charge_delta_percent = comparison_daily_results['daily_total_kwh_charge_delta_percent']
+                daily_total_kwh_co2e_delta_percent = comparison_daily_results['daily_total_kwh_co2e_delta_percent']
+
+                logging.info(
+                    f"Comparison results: {daily_total_kwh_delta}, {daily_total_kwh_charge_delta}, {daily_total_kwh_co2e_delta}, "
+                    f"{daily_total_kwh_delta_percent}, {daily_total_kwh_charge_delta_percent}, {daily_total_kwh_co2e_delta_percent}"                )
+            else:
+                # If no comparison results, set all deltas and percentages to 0
+                daily_total_kwh_delta = daily_total_kwh_charge_delta = daily_total_kwh_co2e_delta = 0
+                daily_total_kwh_delta_percent = daily_total_kwh_charge_delta_percent = daily_total_kwh_co2e_delta_percent = 0
+                logging.info("No benchmark entries found, using default values for deltas and percentages.")
+
+            # Update the `daily_usage` table with the calculated values
             cursor.execute('''
                 UPDATE daily_usage
                 SET 
                     daily_total_kwh = ?,
                     daily_total_kwh_co2e = ?,
-                    daily_total_kwh_charge = ?
+                    daily_total_kwh_charge = ?,
+                    daily_total_kwh_delta = ?,
+                    daily_total_kwh_charge_delta = ?,
+                    daily_total_kwh_co2e_delta = ?,
+                    daily_total_kwh_delta_percent = ?,
+                    daily_total_kwh_charge_delta_percent = ?,
+                    daily_total_kwh_co2e_delta_percent = ?
                 WHERE date = ? AND hour = ?
-            ''', (daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, current_date, f"{str(current_hour).zfill(2)}:00"))
+            ''', (
+                round(daily_total_kwh, 3),
+                round(daily_total_kwh_co2e, 3),
+                round(daily_total_kwh_charge, 3),
+                round(daily_total_kwh_delta, 3),
+                round(daily_total_kwh_charge_delta, 3),
+                round(daily_total_kwh_co2e_delta, 3),
+                round(daily_total_kwh_delta_percent, 2),
+                round(daily_total_kwh_charge_delta_percent, 2),
+                round(daily_total_kwh_co2e_delta_percent, 2),
+                current_data['date'],
+                f"{str(current_data['hour']).zfill(2)}:00"
+            ))
 
-            # Commit changes
+            # Commit the changes to the database
             conn.commit()
-            logging.info("Daily metric values updated successfully for all asset entries.")
+
+            logging.info(f"Updated daily_usage table for {current_data['date']} at {current_data['hour']} with daily totals and deltas.")
+
 
     except Exception as e:
         logging.error(f"Query execution failed for {asset_id}: {str(e)}")
