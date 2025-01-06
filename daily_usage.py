@@ -674,7 +674,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Current hour kWh for {asset_id}: {asset_current_hour_kwh}")
             #logging.info(f"total_kwh_co2e: {total_kwh_co2e} {'grams' if total_kwh_co2e < 500 else 'tonnes'}")
             #logging.info(f"current_hour_kwh_co2e: {current_hour_kwh_co2e} {'grams' if current_hour_kwh_co2e < 500 else 'tonnes'}")
-            logging.info(f"Previous record exists: Total kWh: {previous_total_kwh} for hour: {current_hour}")
+            logging.info(f"Previous record exists: Asset ID {asset_id} - Hour {current_hour}: Total kWh: {previous_total_kwh}")
             logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
 
             org_id, premise_id = get_org_id_and_premise_id_for_asset(cursor, asset_id)
