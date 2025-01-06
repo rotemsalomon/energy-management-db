@@ -527,6 +527,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 asset_data[asset_id]['total_kwh'] += kwh
                 #logging.info(f"Debugging: For asset ID: {asset_id} - Total kWh: {asset_data[asset_id]['total_kwh']}")
 
+            logging.info(f"######### Debugging: Looking previous recod for hour: {current_hour_str} for asset ID: {asset_id}")
             # Fetch the last saved total_kwh for the asset for the previous hour on the same day
             cursor.execute('''
                 SELECT total_kwh FROM daily_usage 
