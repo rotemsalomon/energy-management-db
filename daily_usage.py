@@ -309,7 +309,7 @@ def get_missing_hours(cursor):
         recorded_hours = set()
             
         for row in cursor.fetchall():
-            hour_value = row[current_hour]  # Fetch hour and update_time as string
+            hour_value = row[0]  # Fetch hour and update_time as string
 
             try:
                 
