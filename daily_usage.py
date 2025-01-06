@@ -539,7 +539,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
                 previous_total_kwh = previous_kwh_record['total_kwh']
-                logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
+                #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
             else:
                 previous_total_kwh = 0.0
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
@@ -548,7 +548,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh'] 
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
-            logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
+            #logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
 
             # Log or store the total_kwh  as needed
             logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
