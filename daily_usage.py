@@ -418,6 +418,9 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         total_kwh_charges = {}
         daily_total_kwh = 0.0
 
+        current_date = "2025-01-05"
+        current_date = datetime.strptime(current_date, '%Y-%m-%d').date()  # Ensure it's a date object
+
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
 
