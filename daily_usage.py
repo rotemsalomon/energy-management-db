@@ -277,7 +277,8 @@ def compare_daily_with_benchmark(cursor, current_data):
 
 def get_missing_hours(cursor):
     try:
-        now = datetime.now()
+        #now = datetime.now()
+        now = "2025-01-05"
         # Get current date in 'YYYY-MM-DD' format
         current_date = datetime.now().strftime('%Y-%m-%d')
         current_hour = datetime.now().hour
@@ -417,9 +418,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         compressor_runtimes = []
         total_kwh_charges = {}
         daily_total_kwh = 0.0
-
-        current_date = "2025-01-05"
-        current_date = datetime.strptime(current_date, '%Y-%m-%d').date()  # Ensure it's a date object
 
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
