@@ -576,7 +576,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
             kwh_charge = kwh * rate
             total_kwh_charges[asset_id] += kwh_charge
-            logging.info(f"Asset ID: {asset_id}, kWh Charge: {kwh_charge}, Rate: {rate}, Total Charges: {total_kwh_charges[asset_id]}")
+        
+        logging.info(f"Asset ID: {asset_id}, kWh Charge: {kwh_charge}, Rate: {rate}, Total Charges: {total_kwh_charges[asset_id]}")
 
         for asset_id in asset_data.keys():
             if asset_id in first_response_time_current_hour:
