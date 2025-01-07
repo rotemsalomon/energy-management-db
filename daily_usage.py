@@ -557,7 +557,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
-            #logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
+            logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
 
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
