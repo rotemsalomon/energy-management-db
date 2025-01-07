@@ -565,8 +565,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record is not None:
                 previous_total_kwh_charge = previous_kwh_record[1]
-                previous_total_kwh = previous_kwh_record[0]
-                asset_data[asset_id]['previous_total_kwh_charge'] = previous_total_kwh_charge
+                previous_total_kwh = previous_kwh_record[0]  # Don't forget to initialize previous_total_kwh if record exists
+                asset_data[asset_id]['previous_total_kwh_charge'] = float(previous_total_kwh_charge)
             else:
                 previous_total_kwh = 0.0
                 previous_total_kwh_charge = 0.0
