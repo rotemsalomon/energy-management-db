@@ -589,13 +589,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             total_kwh_charges[asset_id] = asset_data[asset_id]['previous_total_kwh_charge'] + asset_data[asset_id]['current_hour_charge']
             total_kwh_charge = total_kwh_charges[asset_id]
 
-            # Log the updated total charge for the asset
+            """ Log the updated total charge for the asset
             logging.info(
                 f"Asset ID: {asset_id}, Current Hour kWh: {asset_data[asset_id]['current_hour_kwh']:.6f}, "
                 f"Charge: {kwh_charge:.6f}, Response Time: {response_time}, "
                 f"Previous Charge: {asset_data[asset_id]['previous_total_kwh_charge']:.6f}, "
                 f"Total Charge for the Day: {total_kwh_charge:.6f}"
-            )
+            )"""
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
