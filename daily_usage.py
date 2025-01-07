@@ -774,7 +774,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             comparison_daily_results = compare_daily_with_benchmark(cursor, current_daily_data)
 
             # If comparison results exist, extract the delta values
-            if comparison_results:
+            if comparison_daily_results:
                 daily_total_kwh_delta = comparison_daily_results['daily_total_kwh_delta']
                 daily_total_kwh_charge_delta = comparison_daily_results['daily_total_kwh_charge_delta']
                 daily_total_kwh_co2e_delta = comparison_daily_results['daily_total_kwh_co2e_delta']
