@@ -437,10 +437,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         current_hour_start = datetime.strptime(f"{current_date} {current_hour:02d}:00:00", '%Y-%m-%d %H:%M:%S')
         current_hour_end = current_hour_start + timedelta(hours=1)
 
-        logging.info(f"Processing {len(daily_asset_records)} records for: {current_hour_start} - {current_hour_end}")
+        #logging.info(f"Processing {len(daily_asset_records)} records for: {current_hour_start} - {current_hour_end}")
 
         current_hour_str = f"{current_hour:02d}:00"
-        logging.info(f"Debugging: Processing {len(daily_asset_records)} records for: {current_hour_str}")
+        #logging.info(f"Debugging: Processing {len(daily_asset_records)} records for: {current_hour_str}")
 
         for row in daily_asset_records:
             # Extract the four values for every row in the dB derived from the query above
@@ -585,10 +585,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             total_kwh_charges[asset_id] += kwh_charge
 
-            #logging.info(
-            #    f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
-            #    f"Response Time: {response_time}, Total Charge: {total_kwh_charges[asset_id]:.6f}"
-            #)
+            logging.info(
+                f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
+                f"Response Time: {response_time}, Total Charge: {total_kwh_charges[asset_id]:.6f}"
+            )
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
