@@ -282,8 +282,7 @@ def compare_daily_with_benchmark(cursor, current_data):
 def get_missing_hours(cursor):
     try:
         current_date = "2025-12-30"
-        specific_hour = 23
-        current_hour = f"{specific_hour:02d}:00"
+        current_hour = 23
         #now = datetime.now()
         # Get current date in 'YYYY-MM-DD' format
         #current_date = datetime.now().strftime('%Y-%m-%d')
