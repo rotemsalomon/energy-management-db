@@ -179,18 +179,18 @@ def compare_asset_with_benchmark(cursor, asset_id, current_data):
     ## CO2e (Offset): Negative result means less emissions, positve result means more emissions
     ## Charge (Spend): Positive result means more savings, negative result means less savings
     total_kwh_delta = current_data['total_kwh'] - benchmark_total_kwh
-    total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
     total_kwh_charge_delta = benchmark_total_kwh_charge - current_data['total_kwh_charge']
+    total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
     logging.info(f"total_kwh_delta: {current_data['total_kwh']} - {benchmark_total_kwh} = {total_kwh_delta}")
     logging.info(f"total_kwh_co2e_delta: {current_data['total_kwh_co2e']} - {benchmark_total_kwh_co2e}  = {total_kwh_co2e_delta}")
     logging.info(f"total_kwh_charge_delta: {benchmark_total_kwh_charge} - {current_data['total_kwh_charge']} = {total_kwh_charge_delta}")
 
     total_kwh_delta_percent = calculate_benchmark_percentage(total_kwh_delta, benchmark_total_kwh)
-    total_kwh_co2e_delta_percent = calculate_benchmark_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
     total_kwh_charge_delta_percent = calculate_benchmark_percentage(total_kwh_charge_delta, benchmark_total_kwh_charge)
+    total_kwh_co2e_delta_percent = calculate_benchmark_percentage(total_kwh_co2e_delta, benchmark_total_kwh_co2e)
     logging.info(f"total_kwh_delta_percent: {total_kwh_delta} / {benchmark_total_kwh} = {total_kwh_delta_percent}")
-    logging.info(f"total_kwh_co2e_delta_percent: {total_kwh_co2e_delta} / {benchmark_total_kwh_co2e}  = {total_kwh_co2e_delta_percent}")
     logging.info(f"total_kwh_charge_delta_percent: {total_kwh_charge_delta} / {benchmark_total_kwh_charge} = {total_kwh_charge_delta_percent}")
+    logging.info(f"total_kwh_co2e_delta_percent: {total_kwh_co2e_delta} / {benchmark_total_kwh_co2e}  = {total_kwh_co2e_delta_percent}")
 
     # Log comparison results
     logging.info(f"Comparison results for asset_id {asset_id}: "
@@ -253,12 +253,13 @@ def compare_daily_with_benchmark(cursor, current_data):
     ## CO2e (Offset): Negative result means less emissions, positve result means more emissions
     ## Charge (Spend): Positive result means more savings, negative result means less savings
     daily_total_kwh_delta = current_data['daily_total_kwh'] - benchmark_daily_total_kwh
-    daily_total_kwh_co2e_delta = benchmark_daily_total_kwh_co2e - current_data['daily_total_kwh_co2e']
     daily_total_kwh_charge_delta = benchmark_daily_total_kwh_charge - current_data['daily_total_kwh_charge']
+    daily_total_kwh_co2e_delta = benchmark_daily_total_kwh_co2e - current_data['daily_total_kwh_co2e']
 
     daily_total_kwh_delta_percent = calculate_benchmark_percentage(daily_total_kwh_delta, benchmark_daily_total_kwh)
-    daily_total_kwh_co2e_delta_percent = calculate_benchmark_percentage(daily_total_kwh_co2e_delta, benchmark_daily_total_kwh_co2e)
     daily_total_kwh_charge_delta_percent = calculate_benchmark_percentage(daily_total_kwh_charge_delta, benchmark_daily_total_kwh_charge)
+    daily_total_kwh_co2e_delta_percent = calculate_benchmark_percentage(daily_total_kwh_co2e_delta, benchmark_daily_total_kwh_co2e)
+
 
     # Log computation results
     logging.info(f"Computed daily metrics are: "
@@ -736,8 +737,8 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 day_of_week,
                 round(total_kwh_delta, 3), round(total_kwh_charge_delta, 3),
                 round(total_kwh_co2e_delta, 3),
-                round(total_kwh_delta_percent, 2), round(total_kwh_co2e_delta_percent, 2),
-                round(total_kwh_charge_delta_percent, 2)
+                round(total_kwh_delta_percent, 2), round(total_kwh_charge_delta_percent, 2),
+                round(total_kwh_co2e_delta_percent, 2)
             ))
             conn.commit()
 
