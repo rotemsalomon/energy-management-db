@@ -571,6 +571,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             else:
                 previous_total_kwh = 0.0
                 asset_data[asset_id]['previous_total_kwh_charge'] = 0.0
+                previous_total_kwh_charge = 0.0
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
             # Accumulate the current hour kWh to total_kwh
