@@ -604,7 +604,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 ave_comp_runtime_str = max_comp_runtime_str = min_comp_runtime_str = "00:00"
 
             total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
-            logging.info(f"Asset ID: {asset_id}, kWh Charge: {kwh_charge}, Total Charges: {total_kwh_charges[asset_id]}")
+            logging.info(f"Asset ID: {asset_id}, kWh Charge: {kwh_charge}, Rate: {rate}, Total Charges: {total_kwh_charges[asset_id]}")
 
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
