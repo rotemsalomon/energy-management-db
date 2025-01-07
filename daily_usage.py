@@ -563,6 +563,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             if previous_kwh_record:
                 previous_total_kwh = previous_kwh_record['total_kwh']
                 previous_total_kwh_charge = previous_kwh_record['total_kwh_charge']
+                previous_total_kwh_charge = float(previous_total_kwh_charge)
                 #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
             else:
                 previous_total_kwh = 0.0
@@ -585,7 +586,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Debugging: Asset Id: {asset_id} kwh: {kwh} response time: {response_time}")
 
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
-            total_kwh_charges[asset_id] = float(previous_total_kwh_charge) + kwh_charge
+            total_kwh_charges[asset_id] = previous_total_kwh_charge + kwh_charge
 
             logging.info(
                 f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
