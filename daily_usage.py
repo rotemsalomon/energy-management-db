@@ -84,66 +84,38 @@ def get_org_id_and_premise_id_for_asset(cursor, asset_id):
         logging.error(f"Error while fetching org_id and premise_id for asset_id {asset_id}: {e}")
         return None, None
     
-def get_rate_for_response_time(cursor, response_time_str, asset_id):
+def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
     """
-    Retrieve the applicable rate based on response_time for a given asset_id.
-    response_time is the local time a response is recieved from the plug.
+    Calculate the total kWh charge for a given kWh and response_time.
+
+    Args:
+        kwh (float): The kWh value to calculate charges for.
+        response_time (datetime): The timestamp of the measurement.
+        asset_id (str): The ID of the asset being processed.
+        cursor: Database cursor for querying rates.
+
+    Returns:
+        float: The calculated kWh charge.
     """
-    # Convert response_time_str to a datetime object and then to a time object
-    response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S').time()
+    try:
+        # Query the rate applicable to the given response time
+        cursor.execute('''
+            SELECT rate
+            FROM energy_rates
+            WHERE asset_id = ? AND ? BETWEEN rate_start AND rate_end
+        ''', (asset_id, response_time.time()))
+        rate_row = cursor.fetchone()
 
-    # Get the premise_id from asset_info
-    cursor.execute('''
-        SELECT premise_id
-        FROM asset_info
-        WHERE asset_id = ?
-    ''', (asset_id,))
-    premise_id = cursor.fetchone()[0]
-    #logging.info(f"Premise id for {asset_id} is {premise_id}")
-
-    # Get the supplier name and plan name from prem_info
-    cursor.execute('''
-        SELECT supplier_name, supplier_plan_name
-        FROM prem_info
-        WHERE premise_id = ?
-    ''', (premise_id,))
-    prem_info = cursor.fetchone()
-    supplier_name, supplier_plan_name = prem_info
-    #logging.info(f"The supplier for {asset_id} is {supplier_name} and the plan is: {supplier_plan_name}")
-
-    # Query to get the rate applicable for the given response_time
-    query = """
-    SELECT rate_start, rate_end, rate
-    FROM energy_rates
-    WHERE supplier_name = ? AND supplier_plan_name = ?
-    """
-    cursor.execute(query, (supplier_name, supplier_plan_name))
-    rates = cursor.fetchall()
-    #logging.info(f"rates = {rates}")
-
-    applicable_rate = None
-
-    for rate_start_str, rate_end_str, rate in rates:
-        rate_start = datetime.strptime(rate_start_str, '%H:%M:%S').time()
-        rate_end = datetime.strptime(rate_end_str, '%H:%M:%S').time()
-
-        if rate_end < rate_start:
-            # Handle case where rate period spans midnight
-            if response_time >= rate_start or response_time < rate_end:
-                applicable_rate = rate
-                #logging.info(f"Debugging: For asset ID: {asset_id} - Midnight case: The applicable rate is: {applicable_rate}")
-                break
+        if rate_row:
+            rate = rate_row[0]
+            return kwh * rate
         else:
-            # Normal case where rate period does not span midnight
-            if rate_start <= response_time <= rate_end:
-                applicable_rate = rate
-                #logging.info(f"Debugging: For asset ID: {asset_id} - Normal case: The applicable rate is: {applicable_rate}")
-                break
+            logging.warning(f"No applicable rate found for asset {asset_id} at {response_time}")
+            return 0.0
+    except Exception as e:
+        logging.error(f"Error calculating total kWh charge for asset {asset_id}: {e}")
+        return 0.0
 
-    if applicable_rate is None:
-        logging.warning(f"No matching rate found for asset_id {asset_id} at {response_time_str}")
-
-    return applicable_rate if applicable_rate else 0
 
 def compare_asset_with_benchmark(cursor, asset_id, current_data):
     # If running between 00:00 and 00:59, adjust the date and hour to handle the previous day
@@ -572,12 +544,12 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Update previous power state to current for the next iteration
             previous_power[asset_id] = power
 
-            # Look up the rate based on response_time
-            rate = get_rate_for_response_time(cursor, response_time_str, asset_id)
-            kwh_charge = kwh * rate
+            # Use calculate_total_kwh_charge to determine the charge
+            kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             total_kwh_charges[asset_id] += kwh_charge
-        
-        logging.info(f"Asset ID: {asset_id}, kWh Charge: {kwh_charge}, Rate: {rate}, Total Charges: {total_kwh_charges[asset_id]}")
+            
+            # Log the calculated kWh and charge
+            logging.debug(f"Asset {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}")
 
         for asset_id in asset_data.keys():
             if asset_id in first_response_time_current_hour:
@@ -604,8 +576,6 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                 min_comp_runtime_str = format_runtime(min_comp_runtime)
             else:
                 ave_comp_runtime_str = max_comp_runtime_str = min_comp_runtime_str = "00:00"
-
-            total_kwh_charge = total_kwh_charges.get(asset_id, 0.0)
 
             if isinstance(response_time, str):
                 response_time = datetime.strptime(response_time, '%Y-%m-%d %H:%M:%S')
