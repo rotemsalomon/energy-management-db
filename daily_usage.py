@@ -98,7 +98,7 @@ def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
         float: The calculated kWh charge.
     """
     try:
-        # Step 1: Get premise_id from asset_info using asset_id
+        # Get premise_id from asset_info using asset_id
         cursor.execute('''
             SELECT premise_id
             FROM asset_info
@@ -112,7 +112,7 @@ def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
         
         premise_id = premise_id_row[0]
 
-        # Step 2: Get supplier_name and supplier_plan_name from prem_info using premise_id
+        # Get supplier_name and supplier_plan_name from prem_info using premise_id
         cursor.execute('''
             SELECT supplier_name, supplier_plan_name
             FROM prem_info
@@ -126,7 +126,7 @@ def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
         
         supplier_name, supplier_plan_name = prem_info_row
 
-        # Step 3: Get the applicable rate from energy_rates based on supplier_name and supplier_plan_name
+        # Get the applicable rate from energy_rates based on supplier_name and supplier_plan_name
         cursor.execute('''
             SELECT rate_start, rate_end, rate
             FROM energy_rates
@@ -136,7 +136,7 @@ def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
 
         applicable_rate = None
 
-        # Step 4: Check if the response_time is within any rate periods
+        # Check if the response_time is within any rate periods
         for rate_start_str, rate_end_str, rate in rates:
             rate_start = datetime.strptime(rate_start_str, '%H:%M:%S').time()
             rate_end = datetime.strptime(rate_end_str, '%H:%M:%S').time()
@@ -151,7 +151,7 @@ def calculate_total_kwh_charge(kwh, response_time, asset_id, cursor):
                     applicable_rate = rate
                     break
 
-        # Step 5: If no applicable rate is found, log a warning and return 0
+        # If no applicable rate is found, log a warning and return 0
         if applicable_rate is None:
             logging.warning(f"No applicable rate found for asset {asset_id} at {response_time}")
             return 0.0
@@ -297,9 +297,9 @@ def compare_daily_with_benchmark(cursor, current_data):
         'daily_total_kwh_co2e_delta_percent': daily_total_kwh_co2e_delta_percent,
         'daily_total_kwh_charge_delta_percent': daily_total_kwh_charge_delta_percent,
     }
-def get_missing_hours(cursor, static_date=None, static_hour=None):
+#def get_missing_hours(cursor, static_date=None, static_hour=None):
 ## To specify date and hour to run script, comment above and update static_date, static_hour and uncomment below.
-#def get_missing_hours(cursor, static_date="2025-01-07", static_hour="00"):
+def get_missing_hours(cursor, static_date="2025-01-06", static_hour="00"):
     try:
         # Use static values if provided, otherwise calculate dynamically
         if static_date is not None and static_hour is not None:
