@@ -551,7 +551,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             # Fetch the last saved total_kwh for the asset for the previous hour on the same day
             cursor.execute('''
-                SELECT total_kwh, total_kwh_charge FROM daily_usage 
+                SELECT total_kwh FROM daily_usage 
                 WHERE asset_id = ? AND date = ? AND hour < ? 
                 ORDER BY hour DESC LIMIT 1
             ''', (asset_id, current_date, current_hour_str))
@@ -562,11 +562,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
                 previous_total_kwh = previous_kwh_record['total_kwh']
-                previous_total_kwh_charge = previous_kwh_record['total_kwh_charge']
+                #previous_total_kwh_charge = previous_kwh_record['total_kwh_charge']
                 #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
             else:
                 previous_total_kwh = 0.0
-                previous_total_kwh_charge = 0.0
+                #previous_total_kwh_charge = 0.0
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
             # Accumulate the current hour kWh to total_kwh
@@ -585,13 +585,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             #logging.info(f"Debugging: Asset Id: {asset_id} kwh: {kwh} response time: {response_time}")
 
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
-            total_kwh_charges[asset_id] = previous_total_kwh_charge + kwh_charge
+            total_kwh_charges[asset_id] += kwh_charge
 
-            logging.info(
-                f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
-                f"Response Time: {response_time}, Previous Charge: {previous_total_kwh_charge:.6f}, "
-                f"Total Charge for the Day: {total_kwh_charges[asset_id]:.6f}"
-            )
+            #logging.info(
+            #    f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
+            #    f"Response Time: {response_time}, Previous Charge: {previous_total_kwh_charge:.6f}, "
+            #    f"Total Charge for the Day: {total_kwh_charges[asset_id]:.6f}"
+            #)
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
