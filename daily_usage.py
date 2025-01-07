@@ -299,7 +299,7 @@ def compare_daily_with_benchmark(cursor, current_data):
     }
 #def get_missing_hours(cursor, static_date=None, static_hour=None):
 ## To specify date and hour to run script, comment above and update static_date, static_hour and uncomment below.
-def get_missing_hours(cursor, static_date="2025-01-06", static_hour="00"):
+def get_missing_hours(cursor, static_date="2025-01-07", static_hour="23"):
     try:
         # Use static values if provided, otherwise calculate dynamically
         if static_date is not None and static_hour is not None:
