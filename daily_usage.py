@@ -565,42 +565,37 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record is not None:
                 previous_total_kwh_charge = previous_kwh_record[1]
+                previous_total_kwh = previous_kwh_record[0]
                 asset_data[asset_id]['previous_total_kwh_charge'] = previous_total_kwh_charge
-                previous_total_kwh_charge = float(previous_total_kwh_charge)
-                #logging.info(f"Previous record exists: Total kWh: {previous_total_kwh}")
             else:
                 previous_total_kwh = 0.0
-                asset_data[asset_id]['previous_total_kwh_charge'] = 0.0
                 previous_total_kwh_charge = 0.0
+                asset_data[asset_id]['previous_total_kwh_charge'] = 0.0
                 #logging.info(f"No previous record found for asset {asset_id} on date {current_date} before hour {current_hour}")
 
             # Accumulate the current hour kWh to total_kwh
-            #logging.info(f"################# Calculating total_kwh: Previous total_kwh = {previous_total_kwh}, Current hour kWh = {asset_data[asset_id]['current_hour_kwh']}")
             total_kwh = previous_total_kwh + asset_data[asset_id]['current_hour_kwh'] 
-            # Update the total_kwh in asset_data
             asset_data[asset_id]['total_kwh'] = total_kwh
+
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
-            #logging.info(f"The last hour = current hour: {current_hour} for {asset_id}")
 
-            # Log or store the total_kwh  as needed
-            #logging.info(f"Asset ID {asset_id} - Hour {current_hour}: Total kWh = {asset_data[asset_id]['total_kwh']}")
-
-            # Use calculate_total_kwh_charge to determine the charge for the exact response time
-            #logging.info(f"Debugging: Asset Id: {asset_id} kwh: {kwh} response time: {response_time}")
-
+            # Calculate the charge for the current hour
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
-            # Update the current hour's charge (this accumulates as data comes in for the current hour)
+            # Accumulate charges for the current hour
             asset_data[asset_id]['current_hour_charge'] += kwh_charge
+
+            # Update the total_kwh_charge for the asset, including previous charges
             total_kwh_charges[asset_id] = asset_data[asset_id]['previous_total_kwh_charge'] + asset_data[asset_id]['current_hour_charge']
             total_kwh_charge = total_kwh_charges[asset_id]
 
+            # Log the updated total charge for the asset
             logging.info(
                 f"Asset ID: {asset_id}, Current Hour kWh: {asset_data[asset_id]['current_hour_kwh']:.6f}, "
-                f"Response Time: {response_time}, "
+                f"Charge: {kwh_charge:.6f}, Response Time: {response_time}, "
                 f"Previous Charge: {asset_data[asset_id]['previous_total_kwh_charge']:.6f}, "
                 f"Total Charge for the Day: {total_kwh_charge:.6f}"
-)
+            )
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
