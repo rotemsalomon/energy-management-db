@@ -472,12 +472,18 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
                 #last_response_time_current_hour[asset_id] = response_time
                 #logging.info(f"Debugging: Initializing: The last_response_time_current_hour for {asset_id} based on response_time is: {response_time}")
+            
+            # If moving to a new hour, reset the kWh charge for the current hour
+            if asset_data[asset_id]['last_processed_hour'] != current_hour:
+                asset_data[asset_id]['current_hour_kwh'] = 0.0  # Reset per-hour kWh charge
+                asset_data[asset_id]['last_processed_hour'] = current_hour
+
 
             # Assume 4 measurements per minute, and calculate kWh per measurement
             interval_seconds = 60 / 4
             kwh = (power / 1000) * (interval_seconds / 3600)
 
-            # Use calculate_total_kwh_charge to determine the charge
+            # Use calculate_total_kwh_charge to determine the charge for the exact response time
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             total_kwh_charges[asset_id] += kwh_charge
 
