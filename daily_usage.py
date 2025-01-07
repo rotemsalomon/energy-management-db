@@ -580,7 +580,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             # Update the last hour this asset was updated to the current hour
             asset_data[asset_id]['last_hour'] = current_hour
 
-            # Calculate the charge for the current hour
+            # Calculate the charge for the current hour. Function returns kwh * rate value.
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             # Accumulate charges for the current hour
             asset_data[asset_id]['current_hour_charge'] += kwh_charge
