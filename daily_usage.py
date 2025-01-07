@@ -432,7 +432,13 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
         first_response_time_current_hour = {}
         last_response_time_current_hour = {}
 
-        logging.info(f"Debugging: Processing records for: {current_date}")
+        logging.info(f"Processing metrics for: {current_date}, Hour: {current_hour:02d}")
+
+        current_hour_start = datetime.strptime(f"{current_date} {current_hour:02d}:00:00", '%Y-%m-%d %H:%M:%S')
+        current_hour_end = current_hour_start + timedelta(hours=1)
+
+        logging.info(f"Processing {len(daily_asset_records)} records for: {current_hour_start} - {current_hour_end}")
+
         current_hour_str = f"{current_hour:02d}:00"
         logging.info(f"Debugging: Processing {len(daily_asset_records)} records for: {current_hour_str}")
 
@@ -444,6 +450,10 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             response_time = datetime.strptime(response_time_str, '%Y-%m-%d %H:%M:%S')
             # Make response time as string again and extract day of the week.
             day_of_week = response_time.strftime('%A')  # Returns the full weekday name, e.g., 'Monday'
+
+            # Filter for records within the current hour
+            if not (current_hour_start <= response_time < current_hour_end):
+                continue
 
             # Check is asset_id existing in our result array. If not, this means it is
             # the 1st time we are processing the data for this asset_id in the day.
@@ -574,7 +584,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             total_kwh_charges[asset_id] += kwh_charge
-            logging.info(f"Charge for asset {asset_id} at {response_time}: {total_kwh_charges[asset_id]}")
+
+            logging.info(
+                f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
+                f"Response Time: {response_time}, Total Charge: {total_kwh_charges[asset_id]:.6f}"
+            )
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
