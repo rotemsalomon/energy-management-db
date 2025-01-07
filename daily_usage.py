@@ -596,7 +596,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
 
             logging.info(
                 f"Asset ID: {asset_id}, Current Hour kWh: {asset_data[asset_id]['current_hour_kwh']:.6f}, "
-                f"Charge: {kwh_charge:.6f}, Response Time: {response_time}, "
+                f"Response Time: {response_time}, "
                 f"Previous Charge: {asset_data[asset_id]['previous_total_kwh_charge']:.6f}, "
                 f"Total Charge for the Day: {total_kwh_charge:.6f}"
 )
