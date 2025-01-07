@@ -587,11 +587,11 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             kwh_charge = calculate_total_kwh_charge(kwh, response_time, asset_id, cursor)
             total_kwh_charges[asset_id] = float(previous_total_kwh_charge) + kwh_charge
 
-            #logging.info(
-            #    f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
-            #    f"Response Time: {response_time}, Previous Charge: {previous_total_kwh_charge:.6f}, "
-            #    f"Total Charge for the Day: {total_kwh_charges[asset_id]:.6f}"
-            #)
+            logging.info(
+                f"Asset ID: {asset_id}, kWh: {kwh:.6f}, Charge: {kwh_charge:.6f}, "
+                f"Response Time: {response_time}, Previous Charge: {previous_total_kwh_charge:.6f}, "
+                f"Total Charge for the Day: {total_kwh_charges[asset_id]:.6f}"
+            )
 
             #logging.info(f"Debugging: Asset Id: {asset_id} previous power: {previous_power[asset_id]}")
             #logging.info(f"Debugging: Asset Id: {asset_id} power: {power}")
