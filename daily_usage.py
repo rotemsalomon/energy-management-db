@@ -279,79 +279,64 @@ def compare_daily_with_benchmark(cursor, current_data):
         'daily_total_kwh_charge_delta_percent': daily_total_kwh_charge_delta_percent,
     }
 
-def get_missing_hours(cursor):
+def get_missing_hours(cursor, static_date=None, static_hour=None):
     try:
-        current_date = "2025-12-30"
-        current_hour = 23
-        #now = datetime.now()
-        # Get current date in 'YYYY-MM-DD' format
-        #current_date = datetime.now().strftime('%Y-%m-%d')
-        #current_hour = datetime.now().hour
-        #valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
+        # Use static values if provided, otherwise calculate dynamically
+        if static_date is not None and static_hour is not None:
+            current_date = static_date
+            current_hour = int(static_hour)
+        else:
+            now = datetime.now()
+            current_date = now.strftime('%Y-%m-%d')
+            current_hour = now.hour
 
-        # Handle the midnight case: if current hour is 00:00, check the previous day's 23:00
-        # Check if the script is running between 00:00 and 00:59
+        # Determine valid hours
         if current_hour == 0:
-            # Script is running between 00:00 and 00:59, handle the previous day
-            previous_date = (now - timedelta(days=1)).strftime('%Y-%m-%d')
-            valid_hours = {23}  # Only the 23rd hour of the previous day is valid in this case
+            # Midnight case: process the previous day's 23:00
+            previous_date = (datetime.strptime(current_date, '%Y-%m-%d') - timedelta(days=1)).strftime('%Y-%m-%d')
+            valid_hours = {23}
         else:
             # Normal case: valid hours from 00:00 to the previous hour of the current day
-            #valid_hours = set(range(current_hour + 1))  # List of hours from 00:00 to the current hour
             valid_hours = set(range(current_hour))
 
-        # Query to get hours for the current day from the daily_usage table
+        # Query to get hours for the current day from the `daily_usage` table
         query = '''
         SELECT hour
         FROM daily_usage
         WHERE date = ?
         '''
-        
-        if current_hour == 0:
-            cursor.execute(query, (previous_date,))
-        else:
-            cursor.execute(query, (current_date,))
+        target_date = previous_date if current_hour == 0 else current_date
+        cursor.execute(query, (target_date,))
 
         recorded_hours = set()
-            
         for row in cursor.fetchall():
-            hour_value = row[0]  # Fetch hour and update_time as string
-
+            hour_value = row[0]  # Fetch hour as string
             try:
-                
-                # Check if hour is a string and convert it to an integer
+                # Handle string format (e.g., HH:MM) or direct integer values
                 if isinstance(hour_value, str) and ':' in hour_value:
                     hour = int(hour_value.split(':')[0])  # Extract hour from HH:MM format
                 else:
-                    hour = int(hour_value)  # Directly convert to int if it's already a number
-                
+                    hour = int(hour_value)  # Convert directly to int if numeric
                 recorded_hours.add(hour)
             except ValueError as e:
                 logging.error(f"Invalid hour format in the database: {hour_value}")
 
-        # Remove the last hour, so the script re-runs the calculations for the last hour
-        # Handle the case, where script was run mid-hour manually or not all records where used.
-        #recorded_hours.discard(current_hour - 1)
-        
-        # Calculate the missing hours by subtracting recorded hours from valid hours
+        # Calculate missing hours by subtracting recorded hours from valid hours
         missing_hours = sorted(valid_hours - recorded_hours)
-        logging.info(f"These are valid hours: {valid_hours}")
-        logging.info(f"These are recorded hours: {recorded_hours}")
+        logging.info(f"Valid hours: {valid_hours}")
+        logging.info(f"Recorded hours: {recorded_hours}")
         if not missing_hours:
-            logging.info("There are no missing hours.")
+            logging.info("No missing hours detected.")
         else:
-            logging.info(f"These are missing hours: {missing_hours}")
-        
-        # Return missing hours, the last update_time, and the current or previous date
-        if current_hour == 0:
-            return missing_hours, previous_date
-        else:
-            return missing_hours, current_date
-            
+            logging.info(f"Missing hours: {missing_hours}")
+
+        # Return missing hours and the corresponding date
+        return missing_hours, target_date
+
     except Exception as e:
         logging.error(f"An error occurred: {e}")
     
-    return [], None, None  # Return empty list and None for response_time and current_date in case of error
+    return [], None  # Return empty list and None for the date in case of error
 
 def calculate_daily_consumption_by_asset(db_file):
     conn = sqlite3.connect(db_file)
