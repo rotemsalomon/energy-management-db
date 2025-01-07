@@ -278,8 +278,8 @@ def compare_daily_with_benchmark(cursor, current_data):
         'daily_total_kwh_co2e_delta_percent': daily_total_kwh_co2e_delta_percent,
         'daily_total_kwh_charge_delta_percent': daily_total_kwh_charge_delta_percent,
     }
-
-def get_missing_hours(cursor, static_date="2024-12-30", static_hour="23"):
+#def get_missing_hours(cursor, static_date=None, static_hour=None):
+def get_missing_hours(cursor, static_date="2024-12-31", static_hour="23"):
     try:
         # Use static values if provided, otherwise calculate dynamically
         if static_date is not None and static_hour is not None:
