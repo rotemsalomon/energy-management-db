@@ -466,6 +466,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
                     'total_comp_runtime': 0,
                     'asset_name': asset_name,
                     'current_hour_kwh': 0.00,  # Initialize per-asset current_hour_kwh
+                    'previous_total_kwh_charge': 0.0,
                     'last_processed_hour': -1,  # Track the last processed hour
                     'compressor_runtimes': [],
                     'response_time_count': 0,  # Initialize the count of response times
@@ -557,7 +558,7 @@ def process_metrics_for_hour(conn, cursor, daily_asset_records, current_hour, cu
             ''', (asset_id, current_date, current_hour_str))
 
             previous_kwh_record = cursor.fetchone()
-            logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
+            #logging.debug(f"############## Database query result for previous_kwh_record: {previous_kwh_record}")
 
             # Initialize total_kwh based on previous records or start fresh if no record exists
             if previous_kwh_record:
