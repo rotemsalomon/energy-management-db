@@ -6,8 +6,7 @@ import time
 
 # Initialize logging
 setup_logging()
-
-# Get logger for this script
+# Get logger (from logging config.yaml) for this script
 logger = get_logger('daily_usage_logger')
 
 # Emission factors (kg CO2-e per kWh)
@@ -348,7 +347,7 @@ def get_missing_hours(cursor, static_date=None, static_hour=None):
         logger.debug(f"Valid hours: {valid_hours}")
         logger.debug(f"Recorded hours: {recorded_hours}")
         if not missing_hours:
-            logger.info("No missing hours detected.")
+            logger.debug("No missing hours detected.")
         else:
             logger.info(f"Missing hours: {missing_hours}")
 
