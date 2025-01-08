@@ -128,6 +128,8 @@ def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, pl
     try:
         # Retrieve power metrics
         power_metrics = get_power_metrics(plug_proto, plug_ip, plug_uri)
+        url = f"{plug_proto}://{plug_ip}/{plug_uri}"
+
         if not power_metrics:
             logger.error(f"Failed to retrieve power metrics from {url}.")
             return
