@@ -5,7 +5,7 @@ import schedule # type: ignore
 import time
 
 # Initialize logging
-setup_logging(config_path='logging_config.yaml')
+setup_logging()
 
 # Get logger for this script
 logger = get_logger('daily_usage_logger')
