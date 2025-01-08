@@ -21,7 +21,7 @@ handlers:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: detailed
-    filename: '/var/log/energyapp/daily_usage.log'
+    filename: '/var/log/energyapp/tasmota_data.log'
     maxBytes: 5242880  # 5 MB
     backupCount: 5     # Keep 5 backup files
 
