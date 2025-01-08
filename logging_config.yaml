@@ -10,16 +10,18 @@ handlers:
     class: logging.StreamHandler
     level: DEBUG
     formatter: detailed
-  file:
-    class: logging.FileHandler
+  rotating_file:
+    class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: detailed
     filename: '/var/log/energyapp/daily_usage.log'
+    maxBytes: 5*1024*1024  # 5MB
+    backupCount: 5           # Keep 5 backup files
 
 loggers:
-  app:
-    level: DEBUG
-    handlers: [console, file]
+  daily_usage_logger:
+    level: INFO
+    handlers: [console, rotating_file]
     propagate: no
 
 root:
