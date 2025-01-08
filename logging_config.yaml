@@ -21,7 +21,7 @@ handlers:
 loggers:
   daily_usage_logger:
     level: INFO
-    handlers: [console, rotating_file]
+    handlers: [rotating_file]
     propagate: no
 
 root:
