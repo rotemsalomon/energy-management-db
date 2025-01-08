@@ -9,7 +9,7 @@ import logging
 setup_logging(config_path='/root/projects/tasmota/logging_config.yaml')
 
 # Get logger for this script
-#logger = get_logger('daily_usage')
+logger = get_logger('app')
 
 #logger.debug('Starting daily usage script')
 
