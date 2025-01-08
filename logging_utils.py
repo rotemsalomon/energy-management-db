@@ -1,6 +1,6 @@
 import logging
 import logging.config
-import yaml # type: ignore
+import yaml
 import os
 
 # Load logging configuration from YAML
