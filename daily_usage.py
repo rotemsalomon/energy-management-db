@@ -199,9 +199,9 @@ def compare_asset_with_benchmark(cursor, asset_id, current_data):
     ## Charge (Spend): Positive result means more savings, negative result means less savings
     total_kwh_delta = current_data['total_kwh'] - benchmark_total_kwh
     total_kwh_charge_delta = benchmark_total_kwh_charge - current_data['total_kwh_charge']
-    total_kwh_co2e_delta = current_data['total_kwh_co2e'] - benchmark_total_kwh_co2e
+    total_kwh_co2e_delta = benchmark_total_kwh_co2e - current_data['total_kwh_co2e']
     logging.info(f"total_kwh_delta: {current_data['total_kwh']} - {benchmark_total_kwh} = {total_kwh_delta}")
-    logging.info(f"total_kwh_co2e_delta: {current_data['total_kwh_co2e']} - {benchmark_total_kwh_co2e}  = {total_kwh_co2e_delta}")
+    logging.info(f"total_kwh_co2e_delta: {benchmark_total_kwh_co2e} - {current_data['total_kwh_co2e']} = {total_kwh_co2e_delta}")
     logging.info(f"total_kwh_charge_delta: {benchmark_total_kwh_charge} - {current_data['total_kwh_charge']} = {total_kwh_charge_delta}")
 
     total_kwh_delta_percent = calculate_benchmark_percentage(total_kwh_delta, benchmark_total_kwh)
