@@ -13,8 +13,8 @@ logger = get_logger('app')
 
 #logger.debug('Starting daily usage script')
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('daily_usage')
+'''logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('daily_usage')'''
 logger.debug('Debugging')
 logger.info('Info log')
 logger.warning('Warning log')
