@@ -31,7 +31,7 @@ loggers:
     handlers: [rotating_file_daily_usage]
     propagate: no
   tasmota_data_logger:
-    level: DEBUG
+    level: INFO
     handlers: [rotating_file_tasmota_data]
     propagate: no
 
