@@ -11,6 +11,8 @@ setup_logging()
 # Get logger for this script
 logger = get_logger('daily_usage')
 
+logger.info('Starting logging for script')
+
 # Emission factors (kg CO2-e per kWh)
 EF2 = 0.68  # Scope 2 emission factor
 EF3 = 0.09  # Scope 3 emission factor
