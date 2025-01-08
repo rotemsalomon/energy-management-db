@@ -1,0 +1,35 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  detailed:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: detailed
+    stream: ext://sys.stdout
+
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: '/var/log/energyapp/daily_usage.log'
+    mode: 'a'
+
+loggers:
+  daily_usage:
+    level: DEBUG
+    handlers: [file]
+    propagate: no
+
+  database_operations:
+    level: INFO
+    handlers: [file]
+    propagate: no
+
+root:
+  level: WARNING
+  handlers: [file]

@@ -1,16 +1,15 @@
 import sqlite3
 from datetime import datetime, timedelta
+from logging_utils import setup_logging, get_logger
 import schedule # type: ignore
 import time
 import logging
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='/var/log/tasmota-daily-kwh.log',
-    filemode='a'
-)
+# Initialize logging
+setup_logging()
+
+# Get logger for this script
+logger = get_logger('daily_usage')
 
 # Emission factors (kg CO2-e per kWh)
 EF2 = 0.68  # Scope 2 emission factor
