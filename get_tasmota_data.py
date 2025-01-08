@@ -118,7 +118,7 @@ def get_power_metrics(plug_proto, plug_ip, plug_uri):
         }
 
     except (requests.ConnectionError, requests.Timeout, requests.RequestException) as e:
-        logger.error(f'Failed to retrieve power metrics from {url}: {e}')
+        logger.error(f'Failed to retrieve power metrics from {power_metrics_url}: {e}')
         return None
     except json.JSONDecodeError:
         logger.error('Failed to decode JSON response for power metrics.')
