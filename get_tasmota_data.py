@@ -72,7 +72,7 @@ def get_power_status(plug_proto, plug_ip):
         # Parse the JSON response
         power_status_data = response.json()
         power_status = power_status_data.get('POWER', 'UNKNOWN')  # Default to 'UNKNOWN' if not found
-        logger.debug(f'Power status retrieved: {power_status}')
+        logger.debug(f'Power status retrieved for {asset_name} is: {power_status}')
         return power_status
     
     except requests.RequestException as e:
