@@ -15,8 +15,8 @@ handlers:
     level: DEBUG
     formatter: detailed
     filename: '/var/log/energyapp/daily_usage.log'
-    maxBytes: 5*1024*1024  # 5MB
-    backupCount: 5           # Keep 5 backup files
+    maxBytes: 5242880  # 5 MB
+    backupCount: 5     # Keep 5 backup files
 
 loggers:
   daily_usage_logger:
