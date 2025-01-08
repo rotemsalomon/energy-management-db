@@ -58,7 +58,7 @@ def get_asset_info(conn, asset_id):
         asset_name, plug_ip, plug_proto, plug_uri = result
         return asset_name, plug_ip, plug_proto, plug_uri
     else:
-        logging.error(f"No asset information found for asset_id: {asset_id}")
+        logger.error(f"No asset information found for asset_id: {asset_id}")
         return None, None, None, None, None
 
 def get_power_status(plug_proto, plug_ip):
@@ -71,14 +71,14 @@ def get_power_status(plug_proto, plug_ip):
         # Parse the JSON response
         power_status_data = response.json()
         power_status = power_status_data.get('POWER', 'UNKNOWN')  # Default to 'UNKNOWN' if not found
-        #logging.info(f'Power status retrieved: {power_status}')
+        logger.debug(f'Power status retrieved: {power_status}')
         return power_status
     
     except requests.RequestException as e:
-        logging.error(f'Failed to retrieve power status from {power_status_url}: {e}')
+        logger.error(f'Failed to retrieve power status from {power_status_url}: {e}')
         return 'UNKNOWN'
     except json.JSONDecodeError:
-        logging.error('Failed to decode JSON response for power status.')
+        logger.error('Failed to decode JSON response for power status.')
         return 'UNKNOWN'
 
 def get_power_metrics(plug_proto, plug_ip, plug_uri):
@@ -117,10 +117,10 @@ def get_power_metrics(plug_proto, plug_ip, plug_uri):
         }
 
     except (requests.ConnectionError, requests.Timeout, requests.RequestException) as e:
-        logging.error(f'Failed to retrieve power metrics from {url}: {e}')
+        logger.error(f'Failed to retrieve power metrics from {url}: {e}')
         return None
     except json.JSONDecodeError:
-        logging.error('Failed to decode JSON response for power metrics.')
+        logger.error('Failed to decode JSON response for power metrics.')
         return None
 
 def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, plug_uri):
@@ -128,7 +128,7 @@ def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, pl
         # Retrieve power metrics
         power_metrics = get_power_metrics(plug_proto, plug_ip, plug_uri)
         if not power_metrics:
-            logging.error(f"Failed to retrieve power metrics from {url}.")
+            logger.error(f"Failed to retrieve power metrics from {url}.")
             return
 
         # Get power status
@@ -167,12 +167,12 @@ def fetch_and_save_data(url, conn, asset_id, asset_name, plug_proto, plug_ip, pl
         ))
         conn.commit()
 
-        #logging.info(f'Request successful. Data written to database for {url} with compressor state {cur_comp_state} and power status {power_status}.')
+        logger.debug(f'Request successful. Data written to database for {url} with compressor state {cur_comp_state} and power status {power_status}.')
 
     except sqlite3.Error as e:
-        logging.error(f"SQLite error occurred: {e}")
+        logger.error(f"SQLite error occurred: {e}")
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
 
 if __name__ == '__main__':
     # Argument parsing to get asset_id from the command-line argument
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     conn = sqlite3.connect(db_file)
 
     # Log that the script has started
-    logging.info(f"Starting tasmota_sqlite3 service to get data for {asset_id}")
+    logger.info(f"Starting tasmota_sqlite3 service to get data for {asset_id}")
 
     # Fetch asset information and construct the URL components
     asset_name, plug_ip, plug_proto, plug_uri = get_asset_info(conn, asset_id)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
             # Wait for 15 seconds before the next request
             time.sleep(15)
     else:
-        logging.error("No valid asset information found. Exiting script.")
+        logger.error("No valid asset information found. Exiting script.")
 
     # Close the database connection when done
     conn.close()
