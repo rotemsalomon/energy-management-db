@@ -11,15 +11,15 @@ setup_logging(config_path='logging_config.yaml')
 # Get logger for this script
 logger = get_logger('daily_usage')
 
-logger.info('Starting daily usage script')
+logger.debug('Starting daily usage script')
 
-# Set up logging
+'''# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     filename='/var/log/tasmota-daily-kwh.log',
     filemode='a'
-)
+)'''
 
 # Emission factors (kg CO2-e per kWh)
 EF2 = 0.68  # Scope 2 emission factor
