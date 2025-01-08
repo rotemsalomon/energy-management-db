@@ -65,6 +65,7 @@ def get_power_status(plug_proto, plug_ip):
     """Retrieve the power status of the device using the constructed URL."""
     try:
         power_status_url = f"{plug_proto}://{plug_ip}/cm?cmnd=Power"
+        logger.debug(f'Retrieving power status from {power_status_url}')
         response = requests.get(power_status_url)    # Make the request without authentication
         response.raise_for_status() # Raises HTTPError for bad responses
 
