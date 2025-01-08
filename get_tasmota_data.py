@@ -6,16 +6,12 @@ import sys
 import logging
 from datetime import datetime
 import argparse
+from logging_utils import setup_logging, get_logger
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
-    handlers=[
-        logging.FileHandler("/var/log/tasmota_get_data.log"),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
+# Initialize logging
+setup_logging()
+# Get logger (from logging config.yaml) for this script
+logger = get_logger('tasmota_data_logger')
 
 def create_db_and_table(db_file):
     """Create the database and tasmota_energy_data table with necessary columns."""

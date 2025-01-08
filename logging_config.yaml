@@ -10,7 +10,14 @@ handlers:
     class: logging.StreamHandler
     level: DEBUG
     formatter: detailed
-  rotating_file:
+  rotating_file_daily_usage:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: '/var/log/energyapp/daily_usage.log'
+    maxBytes: 5242880  # 5 MB
+    backupCount: 5     # Keep 5 backup files
+  rotating_file_tasmota_data:
     class: logging.handlers.RotatingFileHandler
     level: DEBUG
     formatter: detailed
@@ -21,7 +28,11 @@ handlers:
 loggers:
   daily_usage_logger:
     level: INFO
-    handlers: [rotating_file]
+    handlers: [rotating_file_daily_usage]
+    propagate: no
+  tasmota_data_logger:
+    level: INFO
+    handlers: [rotating_file_tasmota_data]
     propagate: no
 
 root:
