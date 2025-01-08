@@ -6,12 +6,18 @@ import time
 import logging
 
 # Initialize logging
-setup_logging(config_path='/root/projects/tasmota/logging_config.yaml')
+#setup_logging(config_path='/root/projects/tasmota/logging_config.yaml')
 
 # Get logger for this script
-logger = get_logger('daily_usage')
+#logger = get_logger('daily_usage')
 
-logger.debug('Starting daily usage script')
+#logger.debug('Starting daily usage script')
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('daily_usage')
+logger.debug('Debugging')
+logger.info('Info log')
+logger.warning('Warning log')
 
 '''# Set up logging
 logging.basicConfig(
