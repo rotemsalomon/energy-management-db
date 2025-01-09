@@ -7,6 +7,21 @@ def table2csv(db_file, table_name, csv_name):
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
+        # Connect to the SQLite database
+        conn = sqlite3.connect(db_file)
+        cursor = conn.cursor()
+
+        # Query to select column names and all data from the table
+        cursor.execute(f'''
+            PRAGMA table_info({table_name});
+        ''')
+
+        # Fetch column names
+        columns = cursor.fetchall()
+
+        # Extracting just the column names
+        column_names = [col[1] for col in columns]
+
         # Query to select all data from the table
         cursor.execute(f'''
             SELECT * FROM {table_name} LIMIT 1;
@@ -18,6 +33,7 @@ def table2csv(db_file, table_name, csv_name):
         # Writing to CSV
         with open(csv_name + '.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
+            writer.writerow(column_names)
             writer.writerows(rows)
 
         # Close the connection
@@ -33,7 +49,7 @@ if __name__ == '__main__':
     # Database file path and table name
     db_file = '/root/projects/tasmota/sqlite3_db/tasmota_data.db'
     table_name = 'tasmota_energy_data'
-    csv_name = '/root/projects/tasmota/sqlite3_db/raw_tasmota_data_dump'
+    csv_name = '/root/projects/tasmota/scripts/raw_tasmota_data_dump'
 
     # Export table to CSV
     table2csv(db_file, table_name, csv_name)
