@@ -19,7 +19,7 @@ def table2csv(db_file, table_name, csv_name):
 
         # Query to select all data from the table
         cursor.execute(f'''
-            SELECT * FROM {table_name} LIMIT 1000;
+            SELECT * FROM {table_name};
         ''')
 
         # Fetch all rows
