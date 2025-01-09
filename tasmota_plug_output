@@ -241,3 +241,92 @@ http://192.168.2.133/cm?cmnd=TimeStd 1,1,4,1,3,600
     }
   }
 }
+
+
+select id, asset_id,  date, hour, total_kwh, total_kwh_co2e, total_kwh_charge, total_kwh_delta, total_kwh_charge_delta, total_kwh_co2e_delta, total_kwh_delta_percent, total_kwh_charge_delta_percent, total_kwh_co2e_delta_percent, is_benchmark from daily_usage WHERE date = '2025-01-06' AND hour = '14:00';
+
+
+2025-01-06 21:00:36,947 - INFO - ################# Writing to DB: Asset ID D2209CK09FF60S151 - Hour 18: Total kWh = 1.8328125
+2025-01-06 21:00:36,978 - INFO - ################# Writing to DB: Asset ID DC234SN - Hour 18: Total kWh = 2.2031541666666667
+2025-01-06 21:00:40,226 - INFO - ################# Writing to DB: Asset ID D2209CK09FF60S151 - Hour 19: Total kWh = 1.8813749999999998
+2025-01-06 21:00:40,257 - INFO - ################# Writing to DB: Asset ID DC234SN - Hour 19: Total kWh = 2.2966250000000006
+
+
+select id, asset_id,  date, hour, update_time, daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, daily_total_kwh_delta, daily_total_kwh_charge_delta, daily_total_kwh_co2e_delta, daily_total_kwh_delta_percent, daily_total_kwh_charge_delta_percent, daily_total_kwh_co2e_delta_percent, is_benchmark from daily_usage WHERE hour ='11:00' and day_of_week = 'Tuesday' and is_benchmark = '1';
+select id, asset_id,  date, hour, update_time, daily_total_kwh, daily_total_kwh_co2e, daily_total_kwh_charge, daily_total_kwh_delta, daily_total_kwh_charge_delta, daily_total_kwh_co2e_delta, daily_total_kwh_delta_percent, daily_total_kwh_charge_delta_percent, daily_total_kwh_co2e_delta_percent, is_benchmark from daily_usage WHERE date = '2025-01-07';
+
+
+
+2025-01-07 12:49:01,432 - INFO - DC234SN: for hour 11: The current_hour_kwh is: 0.08135000000000032
+
+2025-01-07 12:59:26,145 - INFO - total_kwh_delta: 1.0813500000000003 - 1.17 = -0.08864999999999967
+2025-01-07 12:59:26,145 - INFO - total_kwh_co2e_delta: 0.83 - 0.9  = -0.07000000000000006
+2025-01-07 12:59:26,145 - INFO - total_kwh_charge_delta: 0.38 - 0.3936762500000052 = -0.013676250000005219
+2025-01-07 12:59:26,145 - INFO - total_kwh_delta_percent: -0.08864999999999967 / 1.17 = -7.58
+2025-01-07 12:59:26,145 - INFO - total_kwh_co2e_delta_percent: -0.07000000000000006 / 0.9  = -7.78
+2025-01-07 12:59:26,145 - INFO - total_kwh_charge_delta_percent: -0.013676250000005219 / 0.38 = -3.6
+2025-01-07 12:59:26,145 - INFO - Comparison results for asset_id DC234SN: -0.08864999999999967 kWh, -0.07000000000000006 CO2e, -0.013676250000005219 charge, -7.58% delta in kWh, -7.78% delta in CO2e, -3.6% delta in charge.
+2025-01-07 12:59:26,145 - INFO - Comparison results: -0.08864999999999967, -0.013676250000005219, -0.07000000000000006, -7.58, -3.6, -7.78
+
+
+
+
+2025-01-07 12:49:01,464 - INFO - D2209CK09FF60S151: for hour 11: The current_hour_kwh is: 0.17493750000000027
+
+2025-01-07 13:19:28,016 - INFO - total_kwh_delta: 1.0466291666666667 - 1.31 = -0.26337083333333333
+2025-01-07 13:19:28,016 - INFO - total_kwh_co2e_delta: 0.81 - 1.01  = -0.19999999999999996
+2025-01-07 13:19:28,017 - INFO - total_kwh_charge_delta: 0.75 - 0.3486601249999927 = 0.4013398750000073
+
+
+2025-01-07 13:19:28,017 - INFO - total_kwh_delta_percent: -0.26337083333333333 / 1.31 = -20.1
+2025-01-07 13:19:28,017 - INFO - total_kwh_charge_delta_percent: 0.4013398750000073 / 0.75 = 53.51
+2025-01-07 13:19:28,017 - INFO - total_kwh_co2e_delta_percent: -0.19999999999999996 / 1.01  = -19.8
+
+
+2025-01-07 12:59:26,198 - INFO - Comparison results for asset_id D2209CK09FF60S151: -0.14506249999999954 kWh, -0.10999999999999999 CO2e, 0.03074762500000683 charge, -12.84% delta in kWh, -12.64% delta in CO2e, 8.31% delta in charge.
+2025-01-07 12:59:26,198 - INFO - Comparison results: -0.14506249999999954, 0.03074762500000683, -0.10999999999999999, -12.84, 8.31, -12.64
+
+
+cid  name                type       notnull  dflt_value         pk
+---  ------------------  ---------  -------  -----------------  --
+0    id                  INTEGER    0        NULL               1
+1    asset_id            TEXT       0        NULL               0
+2    premise_id          INTEGER    0        NULL               0
+3    name                TEXT       0        NULL               0
+4    make                TEXT       0        NULL               0
+5    model               TEXT       0        NULL               0
+6    type                TEXT       0        NULL               0
+7    manufacturer        TEXT       0        NULL               0
+8    year                INTEGER    0        NULL               0
+9    notes               TEXT       0        NULL               0
+10   plug_id             TEXT       0        NULL               0
+11   plug_network        TEXT       0        NULL               0
+12   plug_ip             TEXT       0        NULL               0
+13   plug_subnet         TEXT       0        NULL               0
+14   plug_gateway        TEXT       0        NULL               0
+15   plug_ip_allocation  TEXT       0        NULL               0
+16   plug_sw_version     TEXT       0        NULL               0
+17   plug_hostname       TEXT       0        NULL               0
+18   plug_make           TEXT       0        NULL               0
+19   plug_type           TEXT       0        NULL               0
+20   plug_region         TEXT       0        NULL               0
+21   plug_amps           TEXT       0        NULL               0
+22   plug_proto          TEXT       0        NULL               0
+23   plug_uri            TEXT       0        NULL               0
+24   service_state       TEXT       0        NULL               0
+25   service_mode        TEXT       0        NULL               0
+26   service_plan        TEXT       0        NULL               0
+27   created_at          TIMESTAMP  0        CURRENT_TIMESTAMP  0
+28   updated_at          TIMESTAMP  0        CURRENT_TIMESTAMP  0
+29   org_id              TEXT       0        NULL               0
+
+INSERT INTO asset_info (
+asset_id, premise_id, name, make, model, type, manufacturer, year, notes,
+plug_id, plug_network, plug_ip, plug_subnet, plug_gateway, plug_ip_allocation, plug_sw_version, plug_hostname, 
+plug_make, plug_type, plug_region, plug_amps, plug_proto, plug_uri,
+service_state, service_mode, service_plan, org_id)
+VALUES (
+'AIR1234NNNNN',2,'Dining Air Condition','Inverter','XYX','AC','Mitsubishi',2023,,'tasmota-D9DE7C-7804','WIFI',
+'192.168.2.78','255.255.255.0','192.168.2.1','dhcp','14.3.0','tasmota-D9DE7C-7804','Tasmota',
+'Power','AU',10,'http','cm?cmnd=Status+10','Active','Demo','Saver','50110219460'
+);
