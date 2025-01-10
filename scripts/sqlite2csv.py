@@ -15,7 +15,7 @@ def table2csv(db_file, table_name, csv_name):
 
         # Fetch column names
         columns = cursor.fetchall()
-        column_names = [col[1] for col in columns]
+        column_names = [col[1] for col in columns if col[1] in ['id', 'asset_id', 'asset_name', 'response_time', 'power_status', 'power', 'voltage', 'current', 'cur_comp_state']]
 
         # Query to select all data from the table
         cursor.execute(f'''
@@ -25,11 +25,12 @@ def table2csv(db_file, table_name, csv_name):
                 asset_name, 
                 response_time, 
                 power_status, 
-                power, voltage, 
+                power, 
+                voltage, 
                 current, 
                 cur_comp_state 
             FROM {table_name}
-            WHERE asset_id = 'DC234SN'
+            WHERE asset_id = 'DC234SN';
         ''')
 
         # Fetch all rows
