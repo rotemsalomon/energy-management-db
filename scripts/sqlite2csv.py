@@ -19,7 +19,17 @@ def table2csv(db_file, table_name, csv_name):
 
         # Query to select all data from the table
         cursor.execute(f'''
-            SELECT id, asset_id, asset_name, response_time, power_status, power, voltage, current, cur_comp_state FROM {table_name};
+            SELECT 
+                id, 
+                asset_id, 
+                asset_name, 
+                response_time, 
+                power_status, 
+                power, voltage, 
+                current, 
+                cur_comp_state 
+            FROM {table_name}
+            WHERE asset_id = 'DC234SN'
         ''')
 
         # Fetch all rows
