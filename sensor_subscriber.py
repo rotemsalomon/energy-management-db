@@ -107,20 +107,31 @@ def write_to_sensor_data_table(data):
     """Write parsed message data to the sensor_data table."""
     try:
         cursor = db_connection.cursor()
+
+        # Insert only if the sensor message is not already in the database
         cursor.execute("""
-            INSERT INTO sensor_data (
-                response_time, sensor_name, sensor_mac, sensor_uuid, 
-                sensor_major, sensor_minor, sensor_rxpower, sensor_battery, 
-                sensor_bcst_interval, sensor_temperature, sensor_humidity
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            data["Timestamp"], data["Complete Local Name"], data["MAC Address"],
-            data["UUID"], data["Major"], data["Minor"], data["Rx Power (dBm)"],
-            data["Battery Voltage (mV)"], data["Broadcast Interval (ms)"],
-            data["Temperature (C)"], data["Humidity (%)"]
-        ))
-        db_connection.commit()
-        logger.debug("Data written to sensor_data table.")
+            SELECT COUNT(*) FROM sensor_data
+            WHERE sensor_name = ? AND sensor_mac = ? AND sensor_uuid = ? AND response_time = ?
+        """, (data["Complete Local Name"], data["MAC Address"], data["UUID"], data["Timestamp"]))
+
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("""
+                INSERT INTO sensor_data (
+                    response_time, sensor_name, sensor_mac, sensor_uuid, 
+                    sensor_major, sensor_minor, sensor_rxpower, sensor_battery, 
+                    sensor_bcst_interval, sensor_temperature, sensor_humidity
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                data["Timestamp"], data["Complete Local Name"], data["MAC Address"],
+                data["UUID"], data["Major"], data["Minor"], data["Rx Power (dBm)"],
+                data["Battery Voltage (mV)"], data["Broadcast Interval (ms)"],
+                data["Temperature (C)"], data["Humidity (%)"]
+            ))
+            db_connection.commit()
+            logger.debug("Data written to sensor_data table.")
+        else:
+            logger.debug(f"Duplicate entry found for sensor {data['Complete Local Name']}. Skipping insert.")
+
     except sqlite3.Error as e:
         logger.error(f"Error writing to sensor_data table: {e}")
 
