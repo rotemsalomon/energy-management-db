@@ -131,7 +131,7 @@ def on_connect(client, userdata, flags, rc):
         sensor_names = get_sensor_names()
         if sensor_names:
             for sensor_name in sensor_names:
-                topic = f"/ble/{sensor_name}"
+                topic = f"ble/{sensor_name}"
                 client.subscribe(topic)
                 logger.info(f"Subscribed to topic: {topic}")
         else:
