@@ -9,10 +9,16 @@ def on_connect(client, userdata, flags, rc):
     else:
         print(f"Failed to connect, return code {rc}")
 
+def on_subscribe(client, userdata, mid, granted_qos):
+    print(f"Subscription successful, QOS granted: {granted_qos}")
+
 def on_message(client, userdata, msg):
-    # Print the topic and the message payload
-    print(f"Message received on topic: {msg.topic}")
-    print(f"Message payload: {msg.payload.decode('utf-8')}")
+    try:
+        # Print the topic and the message payload
+        print(f"Message received on topic: {msg.topic}")
+        print(f"Message payload: {msg.payload.decode('utf-8')}")
+    except Exception as e:
+        print(f"Error processing message: {e}")
 
 # Create an MQTT client instance
 client_id = "energyApp_sub01"
@@ -23,7 +29,6 @@ certfile = "/etc/ssl/private/energyApp.crt"
 keyfile = "/etc/ssl/private/energyApp.key"
 ca_certs = "/etc/ssl/certs/rootCA.pem"
 
-# Handle TLS setup
 try:
     client.tls_set(certfile=certfile, keyfile=keyfile, ca_certs=ca_certs)
 except FileNotFoundError as e:
@@ -32,6 +37,7 @@ except FileNotFoundError as e:
 
 # Set callback functions
 client.on_connect = on_connect
+client.on_subscribe = on_subscribe
 client.on_message = on_message
 
 # Connect to the EMQX broker
