@@ -24,6 +24,13 @@ handlers:
     filename: '/var/log/energyapp/tasmota_data.log'
     maxBytes: 5242880  # 5 MB
     backupCount: 5     # Keep 5 backup files
+  rotating_file_sensor_data:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: '/var/log/energyapp/sensor_data.log'
+    maxBytes: 5242880  # 5 MB
+    backupCount: 5     # Keep 5 backup files
 
 loggers:
   daily_usage_logger:
@@ -33,6 +40,10 @@ loggers:
   tasmota_data_logger:
     level: INFO
     handlers: [rotating_file_tasmota_data]
+    propagate: no
+  sensor_subscriber_logger:
+    level: INFO
+    handlers: [rotating_file_sensor_data]
     propagate: no
 
 root:
