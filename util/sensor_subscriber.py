@@ -4,7 +4,7 @@ from datetime import datetime
 import paho.mqtt.client as mqtt
 from logging_utils import setup_logging, get_logger
 
-# Initialize logging.
+# Initialize logging
 setup_logging()
 logger = get_logger('sensor_subscriber_logger')
 
