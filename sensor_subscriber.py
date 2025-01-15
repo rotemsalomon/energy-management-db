@@ -120,7 +120,7 @@ def write_to_sensor_data_table(data):
             data["Temperature (C)"], data["Humidity (%)"]
         ))
         db_connection.commit()
-        logger.info("Data written to sensor_data table.")
+        logger.debug("Data written to sensor_data table.")
     except sqlite3.Error as e:
         logger.error(f"Error writing to sensor_data table: {e}")
 
@@ -143,7 +143,7 @@ def on_message(client, userdata, msg):
     """Callback for MQTT messages."""
     try:
         payload = json.loads(msg.payload.decode("utf-8"))
-        logger.info(f"Message received on topic {msg.topic}: {payload}")
+        logger.debug(f"Message received on topic {msg.topic}: {payload}")
         parsed_data = parse_message(payload)
         if parsed_data:
             write_to_sensor_data_table(parsed_data)
