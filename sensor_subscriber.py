@@ -97,6 +97,7 @@ def parse_message(payload):
         if not parsed_data["MAC Address"]:
             parsed_data["MAC Address"] = payload.get("Device Address")
 
+        logger.debug(f"Parsed data: {parsed_data}")
         return parsed_data
     except Exception as e:
         logger.error(f"Error parsing message: {e}")
