@@ -330,3 +330,104 @@ VALUES (
 '192.168.2.78','255.255.255.0','192.168.2.1','dhcp','14.3.0','tasmota-D9DE7C-7804','Tasmota',
 'Power','AU',10,'http','cm?cmnd=Status+10','Active','Demo','Saver','50110219460'
 );
+
+
+If power_status if empty or NULL, set as '‘'ON'
+If asset_name does not match 'DC2345SN' || 'D2209CK09FF60S151' || 'AIR1234NNNNN', delete row 
+
+if asset_id = DC234SN asset_name = 'Borelli 2-door IDC'
+if asset_id = D2209CK09FF60S151 asset_name = 'Borrelli upright freezer'
+if asset_id = AIR1234NNNNN asset_name = 'Dining Air Condition'
+
+Checklist for Data Normalization
+Missing Values:
+
+Identify and handle missing data appropriately (fill or drop).
+Inconsistent Categories:
+
+Standardize strings (e.g., upper/lowercase).
+Map incorrect or inconsistent values to valid ones.
+Outlier Removal:
+
+Use statistical methods (e.g., interquartile range or quantiles) to remove outliers.
+Data Type Validation:
+
+Convert columns to appropriate types for better memory efficiency.
+Scaling Numeric Data:
+
+Normalize numeric data using scaling techniques.
+Adding Derived Columns:
+
+Create new, meaningful columns for analysis.
+Dropping Unnecessary Data:
+
+Remove columns or rows that don't add value to the analysis.
+
+    # Ensure that the agg_factor column is created during aggregation
+    chunk['expected_entries'] = 4  # Since 1 minute is roughly 4 * 15 seconds
+
+    # Count actual number of entries per minute interval
+    actual_entries = chunk.groupby('minute_interval').size().reset_index(name='actual_entries')
+
+    # Merge actual entries count back into chunk
+    chunk = chunk.merge(actual_entries, on='minute_interval', how='left')
+
+    # Calculate agg_factor
+    chunk['agg_factor'] = chunk['actual_entries'] / chunk['expected_entries']
+
+    # Group by asset_id, asset_name, power_status, cur_comp_state, and minute interval, then aggregate with weights
+    grouped = chunk.groupby(
+        ['minute_interval', 'asset_id', 'asset_name', 'power_status', 'cur_comp_state'],
+        as_index=False
+    ).agg({
+        'power': lambda x: sum(x) / len(x),
+        'voltage': lambda x: sum(x) / len(x),
+        'current': lambda x: sum(x) / len(x),
+        'agg_factor': 'mean'  # Ensuring agg_factor is included in the aggregation
+    })
+
+def process_data(df):
+    # Replace 'NULL' with NaN in the respective columns
+    power_null = df['power'].replace('NULL', pd.NA)
+    voltage_null = df['voltage'].replace('NULL', pd.NA)
+    current_null = df['current'].replace('NULL', pd.NA)
+
+    # Convert to numeric with errors='coerce'
+    df['power'] = pd.to_numeric(power_null, errors='coerce')
+    df['voltage'] = pd.to_numeric(voltage_null, errors='coerce')
+    df['current'] = pd.to_numeric(current_null, errors='coerce')
+
+    # Fill NaN values with appropriate defaults
+    df['power'].fillna(0, inplace=True)
+    df['voltage'].fillna(df['voltage'].mean(), inplace=True)
+    df['current'].fillna(0, inplace=True)
+
+    # Add the expected_entries column for aggregation
+    df['expected_entries'] = 4
+
+    # Count actual number of entries per minute interval
+    actual_entries = df.groupby('minute_interval').size().reset_index(name='actual_entries')
+
+    # Merge actual entries count back into df
+    df = df.merge(actual_entries, on='minute_interval', how='left')
+
+    # Calculate agg_factor
+    df['agg_factor'] = df['actual_entries'] / df['expected_entries']
+
+    return df
+
+
+Name: 3673, dtype: object
+Row with mismatched type in column 'id': id                               3675
+response_time                 DC234SN
+power_status       Borelli 2-door IDC
+power             2024-08-31 05:50:47
+voltage                           NaN
+current                            23
+asset_id                        226.0
+asset_name                      0.106
+cur_comp_state                    NaN
+Unnamed: 9                        NaN
+
+id,response_time,power_status,power,voltage,current,asset_id,asset_name,cur_comp_state,
+3675,DC234SN,Borelli 2-door IDC,2024-08-31 05:50:47,,23,226.0,0.106,

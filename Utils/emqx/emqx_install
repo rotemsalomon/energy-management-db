@@ -1,0 +1,44 @@
+Install EMQX deps:
+sudo apt install -y curl jq
+
+Download and run EMQX on Ubuntu 22.04:
+wget https://www.emqx.com/en/downloads/broker/5.8.4/emqx-5.8.4-ubuntu22.04-amd64.deb
+sudo apt install ./emqx-5.8.4-ubuntu22.04-amd64.deb
+sudo systemctl start emqx
+sudo systemctl enable emqx
+
+For certificate generation, refer to util/ssl_cert_notes
+
+Important notes specific to emqx configuration:
+cd /etc/emqx/ssl
+cp /etc/ssl/certs/rootCA.crt .
+cp /etc/ssl/private/edge.* .
+rm edge.csr edge.crt
+cat edge.crt edge.key > edge.pem
+mv rootCA.crt rootCA.pem
+chown emqx:emqx edge.*
+chown emqx:emqx rootCA.pem
+ vi /etc/emqx/emqx.conf
+### configuration of certs for TLS must reference pem files not crt
+### files must be owned by emqx.
+### rootCA pem files does not need to include the rootCA file (obviously)
+### the server (edge) pem file must include the certificate and the key in it (not sure why) 
+systemctl restart emqx.service
+
+If updating listeners in emqx.conf (especially removing), need to perform:
+systemctl stop emqx.service
+rm -rf /var/lib/emqx/configs/*
+systemctl start emqx.service
+
+
+Testing emqx connectivity can be done with mqttx client using these commands
+## install mqttx client
+curl -LO https://www.emqx.com/en/downloads/MQTTX/v1.11.1/mqttx-cli-linux-arm64
+sudo install ./mqttx-cli-linux-arm64 /usr/local/bin/mqttx
+## Server authentication without client authentication - ignoring self-signed certificates (non-trusted root certificate)
+mqttx sub -t 't/1' -h 192.168.2.55 -p 8883 --protocol mqtts --insecure
+## Server authentication without client authentication - with rootCA trusted 
+mqttx sub -t 't/1' -h 192.168.2.55 -p 8883 --protocol mqtts --ca /etc/ssl/certs/rootCA.pem
+## Mutual authentication (mTLS test)
+mqttx sub -t 't/1' -h 192.168.2.55 -p 8883 --protocol mqtts --ca /etc/ssl/certs/rootCA.pem --cert /etc/ssl/private/bleGateway.crt --key /etc/ssl/private/bleGateway.key
+

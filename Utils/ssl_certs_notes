@@ -1,0 +1,281 @@
+Assume all work is being done from /etc/ssl/ as root user.
+
+### Create a self-signing rootCA and client/server certificates signed by the rootCA.
+Certificate Authority (CA) Certificates: /etc/ssl/certs/ including Root CA and Intermediate CA certificates
+Server Certificates and all keys: /etc/ssl/private/ including Server SSL certificates and private keys
+
+Generate key for self-signed CA
+openssl genpkey -algorithm RSA -out private/rootCA.key -pkeyopt rsa_keygen_bits:4096
+vi /etc/ssl/rootCA_cert.conf
+# The main section is named req because the command we are using is req
+# (openssl req ...)
+[ req ]
+# This specifies the default key size in bits. If not specified then 512 is
+# used. It is used if the -new option is used. It can be overridden by using
+# the -newkey option. 
+default_bits = 4096
+
+# This is the default filename to write a private key to. If not specified the
+# key is written to standard output. This can be overridden by the -keyout
+# option.
+default_keyfile = ./private/rootCA.key
+
+# If this is set to no then if a private key is generated it is not encrypted.
+# This is equivalent to the -nodes command line option. For compatibility
+# encrypt_rsa_key is an equivalent option. 
+encrypt_key = no
+
+# This option specifies the digest algorithm to use. Possible values include
+# md5 sha1 mdc2. If not present then MD5 is used. This option can be overridden
+# on the command line.
+default_md = sha256
+
+# if set to the value no this disables prompting of certificate fields and just
+# takes values from the config file directly. It also changes the expected
+# format of the distinguished_name and attributes sections.
+prompt = no
+
+# if set to the value yes then field values to be interpreted as UTF8 strings,
+# by default they are interpreted as ASCII. This means that the field values,
+# whether prompted from a terminal or obtained from a configuration file, must
+# be valid UTF8 strings.
+utf8 = yes
+
+# This specifies the section containing the distinguished name fields to
+# prompt for when generating a certificate or certificate request.
+distinguished_name = my_req_distinguished_name
+
+
+# this specifies the configuration file section containing a list of extensions
+# to add to the certificate request. It can be overridden by the -reqexts
+# command line switch. See the x509v3_config(5) manual page for details of the
+# extension section format.
+req_extensions = my_extensions
+
+[ my_req_distinguished_name ]
+C = AU
+ST = Victoria
+L = Melbourne
+O  = Energy Pty Ltd
+CN = rootCA
+
+[ my_extensions ]
+keyUsage=critical, digitalSignature, keyEncipherment, keyCertSign
+basicConstraints=critical,CA:TRUE
+extendedKeyUsage=critical,serverAuth
+subjectKeyIdentifier = hash
+
+## Create a rootCA certificate
+openssl req -new -x509 -key private/rootCA.key -out certs/rootCA.crt -config rootCA_cert.conf
+## Inspect the rootCA certificate
+openssl x509 -in certs/rootCA.crt -noout -text
+
+>>>>>
+Create a configuration file used to sign client certificates:
+vi sign.ca.conf
+# we use 'ca' as the default section because we're usign the ca command
+[ ca ]
+default_ca = my_ca
+
+[ my_ca ]
+#  a text file containing the next serial number to use in hex. Mandatory.
+#  This file must be present and contain a valid serial number.
+serial = ./serial
+
+# the text database file to use. Mandatory. This file must be present though
+# initially it will be empty.
+database = ./index.txt
+
+# specifies the directory where new certificates will be placed. Mandatory.
+new_certs_dir = /etc/ssl/certs
+
+# the file containing the CA certificate. Mandatory
+certificate = /etc/ssl/certs/rootCA.crt
+
+# the file contaning the CA private key. Mandatory
+private_key = /etc/ssl/private/rootCA.key
+
+# the message digest algorithm. Remember to not use MD5
+default_md = sha256
+
+# for how many days will the signed certificate be valid
+# Max 825
+default_days = 365
+
+# a section with a set of variables corresponding to DN fields
+policy = my_policy
+
+[ my_policy ]
+# if the value is "match" then the field value must match the same field in the
+# CA certificate. If the value is "supplied" then it must be present.
+# Optional means it may be present. Any fields not mentioned are silently
+# deleted.
+countryName = match
+stateOrProvinceName = supplied
+organizationName = supplied
+commonName = supplied
+organizationalUnitName = optional
+commonName = supplied
+
+Setup the directories configured in the above configuration
+echo '01' > serial; touch index.txt
+
+
+>>>>>
+## Generate client configration to be used to create CSR / CRT
+vi cert_template.conf
+# The main section is named req because the command we are using is req
+# (openssl req ...)
+[ req ]
+# This specifies the default key size in bits. If not specified then 512 is
+# used. It is used if the -new option is used. It can be overridden by using
+# the -newkey option. 
+default_bits = 4096
+
+# This is the default filename to write a private key to. If not specified the
+# key is written to standard output. This can be overridden by the -keyout
+# option.
+default_keyfile = {{PRIVATE_KEY}}
+
+# If this is set to no then if a private key is generated it is not encrypted.
+# This is equivalent to the -nodes command line option. For compatibility
+# encrypt_rsa_key is an equivalent option. 
+encrypt_key = no
+
+# This option specifies the digest algorithm to use. Possible values include
+# md5 sha1 mdc2. If not present then MD5 is used. This option can be overridden
+# on the command line.
+default_md = sha256
+
+# if set to the value no this disables prompting of certificate fields and just
+# takes values from the config file directly. It also changes the expected
+# format of the distinguished_name and attributes sections.
+prompt = no
+
+# if set to the value yes then field values to be interpreted as UTF8 strings,
+# by default they are interpreted as ASCII. This means that the field values,
+# whether prompted from a terminal or obtained from a configuration file, must
+# be valid UTF8 strings.
+utf8 = yes
+
+# This specifies the section containing the distinguished name fields to
+# prompt for when generating a certificate or certificate request.
+distinguished_name = my_req_distinguished_name
+
+
+# this specifies the configuration file section containing a list of extensions
+# to add to the certificate request. It can be overridden by the -reqexts
+# command line switch. See the x509v3_config(5) manual page for details of the
+# extension section format.
+req_extensions = my_extensions
+
+[ my_req_distinguished_name ]
+C = AU
+ST = Victoria
+L = Melbourne
+O  = Energy Pty Ltd
+CN = {{COMMON_NAME}}
+
+[ my_extensions ]
+keyUsage=critical, digitalSignature, keyEncipherment
+basicConstraints=critical,CA:FALSE
+extendedKeyUsage=critical,serverAuth
+subjectKeyIdentifier = hash
+{{SAN_EXTENSION}}
+
+{{SAN_SECTION}}
+
+## Create a scipt to use the above template to generate the configuration file
+vi generate_cert_conf.sh
+#!/bin/bash
+
+# Usage: ./generate_cert_conf.sh <common_name> <private_key> [--san <ip1,ip2,...>]
+
+COMMON_NAME="$1"
+PRIVATE_KEY="$2"
+SAN_FLAG=$3
+SAN_IPS=$4  # Optional, comma-separated list of IP addresses for SAN
+
+# Validate input arguments
+if [[ -z "$COMMON_NAME" || -z "$PRIVATE_KEY" ]]; then
+  echo "Usage: $0 \"<common_name>\" \"<private_key>\" [--san <ip1,ip2,...>]"
+  exit 1
+fi
+
+# Escape special characters in variables for use in sed
+COMMON_NAME_ESCAPED=$(printf '%s\n' "$COMMON_NAME" | sed 's/[\/&]/\\&/g')
+PRIVATE_KEY_ESCAPED=$(printf '%s\n' "$PRIVATE_KEY" | sed 's/[\/&]/\\&/g')
+
+TEMPLATE_FILE="template_cert.conf"
+OUTPUT_FILE="${COMMON_NAME}_cert.conf"
+
+# Prepare SAN section if the flag is provided
+SAN_SECTION=""
+if [[ "$SAN_FLAG" == "--san" && -n "$SAN_IPS" ]]; then
+  IFS=',' read -r -a SAN_ARRAY <<< "$SAN_IPS"
+  SAN_SECTION="[ my_subject_alt_names ]\n"
+  for i in "${!SAN_ARRAY[@]}"; do
+    SAN_SECTION+="IP.$((i+1)) = ${SAN_ARRAY[i]}\n"
+  done
+  SAN_EXTENSION="subjectAltName = @my_subject_alt_names"
+else
+  SAN_EXTENSION=""
+fi
+
+# Read template and modify it based on input
+sed -e "s/{{COMMON_NAME}}/$COMMON_NAME_ESCAPED/g" \
+    -e "s/{{PRIVATE_KEY}}/$PRIVATE_KEY_ESCAPED/g" \
+    -e "s/{{SAN_SECTION}}/$SAN_SECTION/g" \
+    -e "s/{{SAN_EXTENSION}}/$SAN_EXTENSION/g" \
+    "$TEMPLATE_FILE" > "$OUTPUT_FILE"
+
+# Print success message
+echo "Generated certificate configuration file with the following settings:"
+echo "  Configuration file: $OUTPUT_FILE"
+echo "  Common Name: $COMMON_NAME"
+echo "  Private Key File: $PRIVATE_KEY"
+if [[ -n "$SAN_SECTION" ]]; then
+  echo "  Subject Alternative Names: $SAN_IPS"
+else
+  echo "  No Subject Alternative Names provided."
+fi
+
+################################################################
+## >>>> For new clients/server certificate; start here <<<<<< ##
+################################################################
+
+## Generate private key for client/server certificate
+openssl genpkey -algorithm RSA -out private/{CN}.key -pkeyopt rsa_keygen_bits:4096
+openssl genpkey -algorithm RSA -out private/energyApp.key -pkeyopt rsa_keygen_bits:4096
+
+## Remove???
+openssl req -new -newkey rsa:4096 -nodes -keyout /etc/ssl/private/bleGateway.key -out /etc/ssl/private/bleGateway.csr
+
+### To execute the script to generate configuration template for client/server
+## Clients don't required SAN (hence its optional) and can be ommitted. Only servers unless architecture demands it.
+./generate_cert_conf.sh "energyApp" "/etc/ssl/private/energyApp.key"
+./generate_cert_conf.sh "server" "/etc/ssl/private/sever.key" --san "127.0.0.1,192.168.2.55"
+
+Generate CSR for client/server
+openssl req -new -out private/{CN}.csr -config {{CN}}_cert.conf ## refer to file create by script above.
+openssl req -new -out private/energyApp.csr -config energyApp_cert.conf
+
+Sign sign the server certificate
+openssl ca -config sign.ca.conf -extfile edge_cert.conf -extensions my_extensions -out private/edge.crt -infiles private/edge.csr
+
+#### NOTE: EMQX does not support certificate extensions!!!!!!!! 
+#### So if generating a certificate for emqx or a client connecting to emqx - Remove extensions
+openssl ca -config sign.ca.conf -extfile energyApp_cert.conf -out private/energyApp.crt -infiles private/energyApp.csr
+
+### NOTE: If you get an error "ERROR:There is already a certificate for .. " and you have deleted all files (key, csr, crt) 
+more /etc/ssl/index.txt for an entry that needs to be deleted.
+
+## Display the edge signed cert
+openssl x509 -in private/energyApp.crt -noout -text
+
+## If required: SCP files to client/server
+scp /etc/ssl/private/bleGateway.key /etc/ssl/private/bleGateway.crt /etc/ssl/certs/rootCA.crt rotem@192.168.2.119:/home/rotem
+
+## On client, add rootCA to trusted CA. For ubuntu (linux distributions), need to covert rootCA.crt (includes only crt) to .pem:
+sudo cp cert/rootCA.crt /usr/local/share/ca-certificates/rootCA.pem
+sudo update-ca-certificates --fresh
