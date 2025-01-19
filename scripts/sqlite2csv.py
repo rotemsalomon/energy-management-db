@@ -13,9 +13,13 @@ def table2csv(db_file, table_name, csv_name):
             PRAGMA table_info({table_name});
         ''')
 
-        # Fetch column names
+       # Fetch column names in the table that match the filter
         columns = cursor.fetchall()
-        column_names = [col[1] for col in columns if col[1] in ['id', 'asset_id', 'asset_name', 'response_time', 'power_status', 'power', 'cur_comp_state']]
+        filtered_columns = [col[1] for col in columns if col[1] in ['id', 'asset_id', 'asset_name', 'response_time', 'power_status', 'power', 'cur_comp_state']]
+
+        # Ensure columns are ordered as per the predefined list
+        desired_order = ['id', 'asset_id', 'asset_name', 'response_time', 'power_status', 'power', 'cur_comp_state']
+        ordered_columns = [col for col in desired_order if col in filtered_columns]
 
         # Query to select all data from the table
         cursor.execute(f'''
@@ -40,7 +44,7 @@ def table2csv(db_file, table_name, csv_name):
         # Writing to CSV with progress bar
         with open(csv_name + '.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(column_names)  # Write column names as the first row
+            writer.writerow(ordered_columns)  # Write column names as the first row
 
             # Use tqdm to display progress bar
             with tqdm(total=len(rows), unit="rows") as pbar:
