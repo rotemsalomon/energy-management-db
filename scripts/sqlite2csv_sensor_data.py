@@ -27,7 +27,6 @@ def table2csv(db_file, table_name, csv_name):
                 id, 
                 response_time, 
                 sensor_name, 
-                response_time, 
                 sensor_temperature, 
                 sensor_humidity
             FROM {table_name}
