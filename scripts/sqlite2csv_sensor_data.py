@@ -30,7 +30,8 @@ def table2csv(db_file, table_name, csv_name):
                 response_time, 
                 sensor_temperature, 
                 sensor_humidity
-            FROM {table_name};
+            FROM {table_name}
+            WHERE id >= 625;
         ''')
 
         # Fetch all rows
