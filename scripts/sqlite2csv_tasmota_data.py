@@ -32,7 +32,8 @@ def table2csv(db_file, table_name, csv_name):
                 power,
                 cur_comp_state 
             FROM {table_name}
-            WHERE asset_id = 'DC234SN';
+            WHERE asset_id = 'DC234SN'
+            AND id >= 1665168;
         ''')
 
         # Fetch all rows
