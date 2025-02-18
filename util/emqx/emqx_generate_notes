@@ -1,0 +1,75 @@
+
+cd /etc/ssl
+if regenerating certificates for clients, need to remove from index.txt
+look for entries that match the certificate being regenerated and delete them,
+
+### All commmands should be run from /etc/ssl
+### scripts below are in their respective files and are assumed to be in /etc/ssl directory
+### rootCA.crt and rootCA.pem are in cert/ directory
+### All other certificates and keys are kept in private/ directory
+
+## Generating a new self signed root certificate with 10 year end date.
+openssl genpkey -algorithm RSA -out private/rootCA.key -pkeyopt rsa_keygen_bits:4096
+openssl req -new -x509 -key private/rootCA.key -out certs/rootCA.crt -days 3650 -config rootCA_cert.conf
+openssl x509 -enddate -noout -in certs/rootCA.crt
+cp certs/rootCA.crt certs/rootCA.pem
+cp /etc/ssl/certs/rootCA.pem /usr/local/share/ca-certificates/rootCA.crt
+update-ca-certificates
+
+openssl genpkey -algorithm RSA -out private/energyApp.key -pkeyopt rsa_keygen_bits:4096
+./generate_cert_conf.sh "energyApp" "/etc/ssl/private/energyApp.key"
+openssl req -new -out private/energyApp.csr -config energyApp_cert.conf
+openssl ca -config sign.ca.conf -extfile energyApp_cert.conf -out private/energyApp.crt -infiles private/energyApp.csr
+
+openssl genpkey -algorithm RSA -out private/edge.key -pkeyopt rsa_keygen_bits:4096
+./generate_cert_conf.sh "edge" "/etc/ssl/private/edge.key" --san 192.168.2.55,127.0.0.1  ## add SAN attributes
+#### emqx.service server. Does not support v3 attribute 'critical'
+vi edge_cert.conf
+replace
+extendedKeyUsage=critical,serverAuth
+with
+extendedKeyUsage=serverAuth
+openssl req -new -out private/edge.csr -config edge_cert.conf
+openssl ca -config sign.ca.conf -extfile edge_cert.conf -extensions my_extensions -out private/edge.crt -infiles private/edge.csr
+2122  cp certs/rootCA.pem /etc/emqx/ssl/
+xxxx  cp private/edge.crt private/edge.pem
+2124  cp private/edge.* /etc/emqx/ssl
+## must be owned by emqx group/user
+2126  chown emqx:emqx /etc/emqx/ssl/edge.*
+systemctl restart emqx.service
+
+1758  openssl genpkey -algorithm RSA -out private/bleGateway.key -pkeyopt rsa_keygen_bits:4096
+1719  ./generate_cert_conf.sh "bleGateway" "/etc/ssl/private/bleGateway.key"
+#### Client of emqx.service
+vi bleGateway_cert.conf
+replace
+extendedKeyUsage=critical,serverAuth
+with
+extendedKeyUsage=clientAuth
+1759  openssl req -new -out private/bleGateway.csr -config bleGateway_cert.conf
+1767  openssl ca -config sign.ca.conf -extfile bleGateway_cert.conf -extensions my_extensions -out private/bleGateway.crt -infiles private/bleGateway.csr
+1774  scp /etc/ssl/private/bleGateway.key /etc/ssl/private/bleGateway.crt /etc/ssl/certs/rootCA.crt rotem@192.168.2.119:/etc/ssl/private
+
+
+1818  openssl x509 -in private/energyApp.crt -noout -text
+2032  openssl x509 -enddate -noout -in private/energyApp.crt
+
+
+systemctl restart nginx.service
+
+root@raasify-edge-c400ad662926:/etc/ssl/private# ll
+-rw-r--r-- 1 root root  6555 Jan 14 17:47 bleGateway.crt
+-rw-r--r-- 1 root root  1830 Jan 14 17:28 bleGateway.csr
+-rw------- 1 root root  3268 Jan 14 17:28 bleGateway.key
+-rw-r--r-- 1 root root  7653 Jan 14 13:46 edge.crt
+-rw------- 1 root root  3272 Jan 14 13:36 edge.key
+-rw-r--r-- 1 root root 10925 Jan 14 13:48 edge.pem
+-rw-r--r-- 1 root root  6554 Jan 15 11:56 energyApp.crt
+-rw-r--r-- 1 root root  1825 Jan 15 11:55 energyApp.csr
+-rw------- 1 root root  3272 Jan 15 11:55 energyApp.key
+-rw------- 1 root root  3272 Jan 14 13:30 rootCA.key
+
+root@raasify-edge-c400ad662926:/etc/ssl/certs# ll |grep rootCA
+lrwxrwxrwx 1 root root     10 Jan 14 16:51 714ab668.0 -> rootCA.crt
+-rw-r--r-- 1 root root   1887 Jan 14 13:32 rootCA.crt
+-rw-r--r-- 1 root root   1887 Jan 15 12:28 rootCA.pem
